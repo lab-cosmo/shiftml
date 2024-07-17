@@ -1,0 +1,27 @@
+[project]
+name = "shiftml"
+version = "0.0.0"
+requires-python = ">=3.9"
+authors = [
+]
+
+dependencies = [
+]
+
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+description = "TODO"
+
+
+[project.urls]
+homepage = "https://github.com/lab-cosmo/ShiftML"
+# documentation = "TODO"
+repository = "https://github.com/lab-cosmo/ShiftML"
+
+
+
+[build-system]
+requires = [
+    "setuptools >=68",
+]
+build-backend = "setuptools.build_meta"
