@@ -23,6 +23,8 @@ jobs:
             python-version: "3.12"
           - os: macos-14
             python-version: "3.12"
+          - os: windows-2019
+            python-version: "3.12"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,5 +42,3 @@ jobs:
 
       - name: run tests
         run: tox
-        env:
-          PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
