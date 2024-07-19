@@ -23,6 +23,23 @@ class ShiftML(MetatensorCalculator):
     """
 
     def __init__(self, model_version, force_download=False):
+        #add .rst doc string with code snippet
+
+        """
+        Initialize the ShiftML calculator
+
+        Parameters
+        ----------
+        model_version : str
+            The version of the ShiftML model to use. Supported versions are
+            "ShiftML1.0".
+        
+        force_download : bool, optional
+            If True, the model will be downloaded even if it is already in the cache.
+            Default is False.
+        
+        """
+
 
         try:
             # The rascline import is necessary because
