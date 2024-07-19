@@ -6,11 +6,15 @@ authors = [
 ]
 
 dependencies = [
+    "numpy",
+    "ase==3.22.1",
+    "metatensor[torch]",
+    "rascaline-torch@git+https://github.com/luthaf/rascaline#subdirectory=python/rascaline-torch",
 ]
 
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
-description = "TODO"
+description = "Predictions of chemical shieldings using machine learning"
 
 
 [project.urls]
