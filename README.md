@@ -49,15 +49,15 @@ conda install -c conda-forge rust
 To install ShiftML, you can use clone this repository and install it using pip, a pipy release will follow soon:
 
 ```
-pip install .
+pip install --extra-index-url https://download.pytorch.org/whl/cpu .
 ```
 
 ## The code that makes it work
 
 This project would not have been possible without the following packages:
 
-- [metatensor](https://github.com/lab-cosmo/metatensor)
-- [rascaline](https://github.com/Luthaf/rascaline)
+- Metadata and model handling: [metatensor](https://github.com/lab-cosmo/metatensor)
+- Atomic descriptor engine: [rascaline](https://github.com/Luthaf/rascaline)
 
 ## Documentation
 
@@ -72,5 +72,10 @@ Guillaume Fraux
 
 ## References
 
-This package is based on the following publications:
+This package is based on the following papers:
+
+- Chemical shifts in molecular solids by machine learning - Paruzzo et al. [[1](https://doi.org/10.1038%2Fs41467-018-06972-x)]
+- A Bayesian approach to NMR crystal structure determination - Engel et al. [[2](https://doi.org/10.1039%2Fc9cp04489b)]
+- A Machine Learning Model of Chemical Shifts for Chemically and\
+Structurally Diverse Molecular Solids - Cordova et al. [[3](https://doi.org/10.1021/acs.jpcc.2c03854)]
 
