@@ -53,7 +53,7 @@ class ShiftML(MetatensorCalculator):
             # it is required for the scripted model
             import rascaline.torch
 
-            logging.info(rascaline.torch.__version__)
+            logging.info("rascaline version: {}".format(rascaline.torch.__version__))
             logging.info("rascaline-torch is installed, importing rascaline-torch")
 
             assert (
@@ -73,7 +73,9 @@ class ShiftML(MetatensorCalculator):
             self.outputs = resolve_outputs[model_version]
             self.fitted_species = resolve_fitted_species[model_version]
             logging.info("Found model version in url_resolve")
-            logging.info("Resolving model version to model files at url: ", url)
+            logging.info(
+                "Resolving model version to model files at url: {}".format(url)
+            )
         except KeyError:
             raise ValueError(
                 f"Model version {model_version} is not supported.\
@@ -92,10 +94,14 @@ class ShiftML(MetatensorCalculator):
 
             if os.path.exists(model_file) and force_download:
                 logging.info(
-                    f"Found {model_version} in cache, but force_download is set to True"
+                    "Found {} in cache, but force_download is set to True".format(
+                        model_version
+                    )
                 )
                 logging.info(
-                    f"Removing {model_version} from cache and downloading it again"
+                    "Removing {} from cache and downloading it again".format(
+                        model_version
+                    )
                 )
                 os.remove(model_file)
                 download = True
@@ -103,8 +109,10 @@ class ShiftML(MetatensorCalculator):
             else:
                 if os.path.exists(model_file):
                     logging.info(
-                        f"Found {model_version}  in cache,\
-                         and importing it from here: {cachedir}"
+                        "Found {}  in cache,\
+                         and importing it from here: {}".format(
+                            model_version, cachedir
+                        )
                     )
                     download = False
                 else:
@@ -113,23 +121,31 @@ class ShiftML(MetatensorCalculator):
 
             if download:
                 urllib.request.urlretrieve(url, model_file)
-                logging.info(f"Downloaded {model_version} and saved to {cachedir}")
+                logging.info(
+                    "Downloaded {} and saved to {}".format(model_version, cachedir)
+                )
 
         except urllib.error.URLError as e:
             logging.error(
-                f"Failed to download {model_version} from {url}. URL Error: {e.reason}"
+                "Failed to download {} from {}. URL Error: {}".format(
+                    model_version, url, e.reason
+                )
             )
             raise e
         except urllib.error.HTTPError as e:
             logging.error(
-                f"Failed to download {model_version} from {url}.\
-                  HTTP Error: {e.code} - {e.reason}"
+                "Failed to download {} from {}.\
+                  HTTP Error: {} - {}".format(
+                    model_version, url, e.code, e.reason
+                )
             )
             raise e
         except Exception as e:
             logging.error(
-                f"An unexpected error occurred while downloading\
-                  {model_version} from {url}: {e}"
+                "An unexpected error occurred while downloading\
+                  {} from {}: {}".format(
+                    model_version, url, e
+                )
             )
             raise e
 
