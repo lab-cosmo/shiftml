@@ -14,16 +14,19 @@ logging.basicConfig(level=logging.DEBUG, format=logformat)
 url_resolve = {
     "ShiftML1.0": "https://tinyurl.com/3xwec68f",
     "ShiftML1.1": "https://tinyurl.com/53ymkhvd",
+    "ShiftML2.0": "https://tinyurl.com/9v8ppnru",
 }
 
 resolve_outputs = {
     "ShiftML1.0": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
     "ShiftML1.1": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
+    "ShiftML2.0": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
 }
 
 resolve_fitted_species = {
     "ShiftML1.0": set([1, 6, 7, 8, 16]),
     "ShiftML1.1": set([1, 6, 7, 8, 16]),
+    "ShiftML2.0": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
 
 

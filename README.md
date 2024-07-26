@@ -21,7 +21,7 @@ from shiftml.ase import ShiftML
 frame = bulk("C", "diamond", a=3.566)
 calculator = ShiftML("ShiftML1.0")
 
-cs_iso = calc.get_cs_iso(frame)
+cs_iso = calculator.get_cs_iso(frame)
 
 print(cs_iso)
 
