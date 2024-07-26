@@ -1,8 +1,15 @@
+import logging
 import os
 import urllib.request
 
 from metatensor.torch.atomistic import ModelOutput
 from metatensor.torch.atomistic.ase_calculator import MetatensorCalculator
+from platformdirs import user_cache_path
+
+# For now we set the logging level to DEBUG
+logformat = "%(asctime)s - %(levelname)s - %(message)s"
+logging.basicConfig(level=logging.DEBUG, format=logformat)
+
 
 url_resolve = {
     "ShiftML1.0": "https://tinyurl.com/3xwec68f",
@@ -36,6 +43,8 @@ class ShiftML(MetatensorCalculator):
             "ShiftML1.0".
         force_download : bool, optional
             If True, the model will be downloaded even if it is already in the cache.
+            The chache-dir will be determined via the platformdirs library and should
+            comply with user settings such as XDG_CACHE_HOME.
             Default is False.
         """
 
@@ -44,8 +53,12 @@ class ShiftML(MetatensorCalculator):
             # it is required for the scripted model
             import rascaline.torch
 
-            print(rascaline.torch.__version__)
-            print("rascaline-torch is installed, importing rascaline-torch")
+            logging.info(rascaline.torch.__version__)
+            logging.info("rascaline-torch is installed, importing rascaline-torch")
+
+            assert (
+                rascaline.torch.__version__ == "0.1.0.dev558"
+            ), "wrong rascaline-torch installed"
 
         except ImportError:
             raise ImportError(
@@ -59,8 +72,8 @@ class ShiftML(MetatensorCalculator):
             url = url_resolve[model_version]
             self.outputs = resolve_outputs[model_version]
             self.fitted_species = resolve_fitted_species[model_version]
-            print("Found model version in url_resolve")
-            print("Resolving model version to model files at url: ", url)
+            logging.info("Found model version in url_resolve")
+            logging.info("Resolving model version to model files at url: ", url)
         except KeyError:
             raise ValueError(
                 f"Model version {model_version} is not supported.\
@@ -68,51 +81,53 @@ class ShiftML(MetatensorCalculator):
             )
 
         cachedir = os.path.expanduser(
-            os.path.join("~", ".cache", "shiftml", str(model_version))
+            os.path.join(user_cache_path(), "shiftml", str(model_version))
         )
 
         # check if model is already downloaded
         try:
             if not os.path.exists(cachedir):
                 os.makedirs(cachedir)
-            model_file = os.path.join(cachedir, "model.pt")
+            model_file = os.path.join(cachedir, model_version + ".pt")
 
             if os.path.exists(model_file) and force_download:
-                print(
+                logging.info(
                     f"Found {model_version} in cache, but force_download is set to True"
                 )
-                print(f"Removing {model_version} from cache and downloading it again")
-                os.remove(os.path.join(cachedir, "model.pt"))
+                logging.info(
+                    f"Removing {model_version} from cache and downloading it again"
+                )
+                os.remove(model_file)
                 download = True
 
             else:
                 if os.path.exists(model_file):
-                    print(
+                    logging.info(
                         f"Found {model_version}  in cache,\
                          and importing it from here: {cachedir}"
                     )
                     download = False
                 else:
-                    print("Model not found in cache, downloading it")
+                    logging.info("Model not found in cache, downloading it")
                     download = True
 
             if download:
-                urllib.request.urlretrieve(url, os.path.join(cachedir, "model.pt"))
-                print(f"Downloaded {model_version} and saved to {cachedir}")
+                urllib.request.urlretrieve(url, model_file)
+                logging.info(f"Downloaded {model_version} and saved to {cachedir}")
 
         except urllib.error.URLError as e:
-            print(
+            logging.error(
                 f"Failed to download {model_version} from {url}. URL Error: {e.reason}"
             )
             raise e
         except urllib.error.HTTPError as e:
-            print(
+            logging.error(
                 f"Failed to download {model_version} from {url}.\
                   HTTP Error: {e.code} - {e.reason}"
             )
             raise e
         except Exception as e:
-            print(
+            logging.error(
                 f"An unexpected error occurred while downloading\
                   {model_version} from {url}: {e}"
             )

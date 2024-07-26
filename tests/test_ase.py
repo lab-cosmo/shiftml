@@ -66,5 +66,10 @@ def test_shftml1_fail_invalid_species():
 
     frame = bulk("Si", "diamond", a=3.566)
     model = ShiftML("ShiftML1.0")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exc_info:
         model.get_cs_iso(frame)
+
+    assert exc_info.type == ValueError
+    assert "Model is fitted only for the following atomic numbers:" in str(
+        exc_info.value
+    )
