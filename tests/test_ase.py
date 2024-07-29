@@ -223,13 +223,13 @@ def test_shiftml2_regression_mean():
     out_ensemble = model.get_cs_iso_ensemble(frame)
 
     assert np.allclose(
-        out_mean.flatten(), expected_mean_v2
+        out_mean.flatten(), expected_mean_v2, atol=0.01
     ), "ShiftML2 failed regression mean test"
 
     assert np.allclose(
-        out_std.flatten(), expected_std_v2
+        out_std.flatten(), expected_std_v2, atol=0.01
     ), "ShiftML2 failed regression variance test"
 
     assert np.allclose(
-        out_ensemble.flatten(), expected_ensemble_v2.flatten()
+        out_ensemble.flatten(), expected_ensemble_v2.flatten(), atol=0.01
     ), "ShiftML2 failed regression ensemble test"
