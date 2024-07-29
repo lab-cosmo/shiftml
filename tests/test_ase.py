@@ -231,5 +231,5 @@ def test_shiftml2_regression_mean():
     ), "ShiftML2 failed regression variance test"
 
     assert np.allclose(
-        out_ensemble.flatten(), expected_ensemble_v2
+        out_ensemble.flatten(), expected_ensemble_v2.flatten()
     ), "ShiftML2 failed regression ensemble test"

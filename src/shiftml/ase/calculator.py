@@ -14,14 +14,14 @@ logging.basicConfig(level=logging.DEBUG, format=logformat)
 url_resolve = {
     "ShiftML1.0": "https://tinyurl.com/3xwec68f",
     "ShiftML1.1": "https://tinyurl.com/53ymkhvd",
-    "ShiftML2.0": "https://tinyurl.com/2mp8emsd",
+    "ShiftML2.0": "https://tinyurl.com/bdcp647w",
 }
 
 resolve_outputs = {
     "ShiftML1.0": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
     "ShiftML1.1": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
     "ShiftML2.0": {
-        "mtt::cs_iso_mean": ModelOutput(quantity="", unit="ppm", per_atom=True),
+        "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
         "mtt::cs_iso_std": ModelOutput(quantity="", unit="ppm", per_atom=True),
         "mtt::cs_iso_ensemble": ModelOutput(quantity="", unit="ppm", per_atom=True),
     },
@@ -32,6 +32,16 @@ resolve_fitted_species = {
     "ShiftML1.1": set([1, 6, 7, 8, 16]),
     "ShiftML2.0": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
+
+
+def is_fitted_on(atoms, fitted_species):
+    if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
+        raise ValueError(
+            f"Model is fitted only for the following atomic numbers:\
+            {fitted_species}. The atomic numbers in the atoms object are:\
+            {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
+            with only the fitted species."
+        )
 
 
 class ShiftML(MetatensorCalculator):
@@ -163,80 +173,37 @@ class ShiftML(MetatensorCalculator):
         """
         Compute the shielding values for the given atoms object
         """
-        if self.model_version == "ShiftML1.0" or self.model_version == "ShiftML1.1":
-            assert (
-                "mtt::cs_iso" in self.outputs.keys()
-            ), "model does not support chemical shielding prediction"
+        assert (
+            "mtt::cs_iso" in self.outputs.keys()
+        ), "model does not support chemical shielding prediction"
 
-            if not set(atoms.get_atomic_numbers()).issubset(self.fitted_species):
-                raise ValueError(
-                    f"Model is fitted only for the following atomic numbers:\
-                    {self.fitted_species}. The atomic numbers in the atoms object are:\
-                    {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
-                    with only the fitted species."
-                )
+        is_fitted_on(atoms, self.fitted_species)
 
-            out = self.run_model(atoms, self.outputs)
-            cs_iso = out["mtt::cs_iso"].block(0).values.detach().numpy()
-
-        elif self.model_version == "ShiftML2.0":
-            assert (
-                "mtt::cs_iso_mean" in self.outputs.keys()
-            ), "model does not support chemical shielding prediction"
-
-            if not set(atoms.get_atomic_numbers()).issubset(self.fitted_species):
-                raise ValueError(
-                    f"Model is fitted only for the following atomic numbers:\
-                    {self.fitted_species}. The atomic numbers in the atoms object are:\
-                    {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
-                    with only the fitted species."
-                )
-
-            out = self.run_model(atoms, self.outputs)
-            cs_iso = out["mtt::cs_iso_mean"].block(0).values.detach().numpy()
+        out = self.run_model(atoms, self.outputs)
+        cs_iso = out["mtt::cs_iso"].block(0).values.detach().numpy()
 
         return cs_iso
 
     def get_cs_iso_std(self, atoms):
-        if self.model_version == "ShiftML2.0":
-            assert (
-                "mtt::cs_iso_std" in self.outputs.keys()
-            ), "model does not support chemical shielding prediction"
+        assert (
+            "mtt::cs_iso_std" in self.outputs.keys()
+        ), "model does not support chemical shielding prediction"
 
-            if not set(atoms.get_atomic_numbers()).issubset(self.fitted_species):
-                raise ValueError(
-                    f"Model is fitted only for the following atomic numbers:\
-                    {self.fitted_species}. The atomic numbers in the atoms object are:\
-                    {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
-                    with only the fitted species."
-                )
+        is_fitted_on(atoms, self.fitted_species)
 
-            out = self.run_model(atoms, self.outputs)
-            cs_iso_std = out["mtt::cs_iso_std"].block(0).values.detach().numpy()
-        else:
-            raise RuntimeError("Version not supporting uncertainty quantification.")
+        out = self.run_model(atoms, self.outputs)
+        cs_iso_std = out["mtt::cs_iso_std"].block(0).values.detach().numpy()
 
         return cs_iso_std
 
     def get_cs_iso_ensemble(self, atoms):
-        if self.model_version == "ShiftML2.0":
-            assert (
-                "mtt::cs_iso_ensemble" in self.outputs.keys()
-            ), "model does not support chemical shielding prediction"
+        assert (
+            "mtt::cs_iso_ensemble" in self.outputs.keys()
+        ), "model does not support chemical shielding prediction"
 
-            if not set(atoms.get_atomic_numbers()).issubset(self.fitted_species):
-                raise ValueError(
-                    f"Model is fitted only for the following atomic numbers:\
-                    {self.fitted_species}. The atomic numbers in the atoms object are:\
-                    {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
-                    with only the fitted species."
-                )
+        is_fitted_on(atoms, self.fitted_species)
 
-            out = self.run_model(atoms, self.outputs)
-            cs_iso_ensemble = (
-                out["mtt::cs_iso_ensemble"].block(0).values.detach().numpy()
-            )
-        else:
-            raise RuntimeError("Version not supporting uncertainty quantification.")
+        out = self.run_model(atoms, self.outputs)
+        cs_iso_ensemble = out["mtt::cs_iso_ensemble"].block(0).values.detach().numpy()
 
         return cs_iso_ensemble
