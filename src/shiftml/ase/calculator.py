@@ -8,7 +8,7 @@ from platformdirs import user_cache_path
 
 # For now we set the logging level to DEBUG
 logformat = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=logformat)
+logging.basicConfig(level=logging.INFO, format=logformat)
 
 
 url_resolve = {
