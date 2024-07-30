@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG, format=logformat)
 
 url_resolve = {
     "ShiftML1.0": "https://tinyurl.com/3xwec68f",
-    "ShiftML1.1": "https://tinyurl.com/53ymkhvd",
+    "ShiftML1.1": "https://tinyurl.com/f237evr3",
     "ShiftML2.0": "https://tinyurl.com/bdcp647w",
 }
 
@@ -167,7 +167,6 @@ class ShiftML(MetatensorCalculator):
             raise e
 
         super().__init__(model_file)
-        self.model_version = model_version
 
     def get_cs_iso(self, atoms):
         """
