@@ -8,12 +8,12 @@ from platformdirs import user_cache_path
 
 # For now we set the logging level to DEBUG
 logformat = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=logformat)
+logging.basicConfig(level=logging.INFO, format=logformat)
 
 
 url_resolve = {
     "ShiftML1.0": "https://tinyurl.com/3xwec68f",
-    "ShiftML1.1": "https://tinyurl.com/53ymkhvd",
+    "ShiftML1.1": "https://tinyurl.com/f237evr3",
     "ShiftML2.0": "https://tinyurl.com/bdcp647w",
 }
 
