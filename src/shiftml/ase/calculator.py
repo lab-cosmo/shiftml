@@ -167,6 +167,7 @@ class ShiftML(MetatensorCalculator):
             raise e
 
         super().__init__(model_file)
+        self.model_version = model_version
 
     def get_cs_iso(self, atoms):
         """
