@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "numpy",
     "ase==3.22.1",
+    "metatensor-operations<0.2.0,>=0.1.0",
     "metatensor[torch]",
     "platformdirs",
     "rascaline-torch@git+https://github.com/luthaf/rascaline@e215461#subdirectory=python/rascaline-torch",
