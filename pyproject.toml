@@ -6,7 +6,7 @@ authors = [
 ]
 
 dependencies = [
-    "numpy",
+    "numpy<2.0.0",
     "ase==3.22.1",
     "metatensor-operations<0.2.0,>=0.1.0",
     "metatensor[torch]",

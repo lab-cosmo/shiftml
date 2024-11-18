@@ -191,7 +191,7 @@ def test_shiftml1_size_extensivity_test():
         out.flatten(), expected_output
     ), "ShiftML1 failed regression test"
 
-    frame = frame * (2, 1, 1)
+    frame = frame.repeat((2, 1, 1))
     out = model.get_cs_iso(frame)
 
     assert np.allclose(
