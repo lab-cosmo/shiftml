@@ -7,6 +7,7 @@ expected_outputs = {
     "ShiftML1.1rev": np.array([137.5415, 137.5415]),
 }
 
+
 def test_shiftml1_1_regression():
     """Regression test for the ShiftML1.1 model."""
 

@@ -17,7 +17,9 @@ url_resolve = {
 }
 
 resolve_outputs = {
-    "ShiftML1.1rev": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
+    "ShiftML1.1rev": {
+        "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)
+    },
     "ShiftML2.0rev": {
         "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
         "mtt::cs_iso_std": ModelOutput(quantity="", unit="ppm", per_atom=True),
