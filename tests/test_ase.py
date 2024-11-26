@@ -7,6 +7,7 @@ from ase.build import bulk
 from shiftml.ase import ShiftML
 
 expected_output = np.array([137.5415, 137.5415])
+
 expected_ensemble_v2 = np.array(
     [
         [
@@ -148,10 +149,10 @@ expected_std_v2 = np.array([7.7993703, 7.7993703])
 
 
 def test_shiftml1_regression():
-    """Regression test for the ShiftML1.0 model."""
+    """Regression test for the ShiftML1.1rev model."""
 
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML1.0", force_download=True)
+    model = ShiftML("ShiftML1.1rev", force_download=True)
     out = model.get_cs_iso(frame)
 
     assert np.allclose(
@@ -160,10 +161,10 @@ def test_shiftml1_regression():
 
 
 def test_shiftml1_rotational_invariance():
-    """Rotational invariance test for the ShiftML1.0 model."""
+    """Rotational invariance test for the ShiftML1.1rev model."""
 
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML1.0")
+    model = ShiftML("ShiftML1.1rev")
     out = model.get_cs_iso(frame)
 
     assert np.allclose(
@@ -181,10 +182,10 @@ def test_shiftml1_rotational_invariance():
 
 
 def test_shiftml1_size_extensivity_test():
-    """Test ShiftML1.0 for translational invariance."""
+    """Test ShiftML1.1rev for translational invariance."""
 
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML1.0")
+    model = ShiftML("ShiftML1.1rev")
     out = model.get_cs_iso(frame)
 
     assert np.allclose(
@@ -200,10 +201,10 @@ def test_shiftml1_size_extensivity_test():
 
 
 def test_shftml1_fail_invalid_species():
-    """Test ShiftML1.0 for non-fitted species"""
+    """Test ShiftML1.1rev for non-fitted species"""
 
     frame = bulk("Si", "diamond", a=3.566)
-    model = ShiftML("ShiftML1.0")
+    model = ShiftML("ShiftML1.1rev")
     with pytest.raises(ValueError) as exc_info:
         model.get_cs_iso(frame)
 
@@ -214,10 +215,10 @@ def test_shftml1_fail_invalid_species():
 
 
 def test_shiftml2_regression_mean():
-    """Regression test for the ShiftML2.0 model."""
+    """Regression test for the ShiftML2.0rev model."""
 
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML2.0", force_download=True)
+    model = ShiftML("ShiftML2.0rev", force_download=True)
     out_mean = model.get_cs_iso(frame)
     out_std = model.get_cs_iso_std(frame)
     out_ensemble = model.get_cs_iso_ensemble(frame)

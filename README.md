@@ -19,7 +19,7 @@ from ase.build import bulk
 from shiftml.ase import ShiftML
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML1.0")
+calculator = ShiftML("ShiftML1.1rev")
 
 cs_iso = calculator.get_cs_iso(frame)
 
@@ -29,7 +29,7 @@ print(cs_iso)
 
 ## IMPORTANT: Install pre-instructions before PiPy release
 
-Rascaline-torch, one of the main dependence of ShiftML, requires CXX and Rust compilers to be built from source.
+Featomic-torch, one of the main dependence of ShiftML, requires CXX and Rust compilers to be built from source.
 Most systems come already with configured C/C++ compilers (make sure that some environment variables CC and CXX are set
 and gcc can be found), but Rust typically needs to be installed manually.
 For ease of use we strongly recommend to use some sort of package manager to install Rust, such as conda and a fresh environment.
@@ -37,12 +37,11 @@ For ease of use we strongly recommend to use some sort of package manager to ins
 
 ```bash
 
-conda create -n shiftml python=3.10
+conda create -n shiftml python=3.12
 conda activate shiftml
 conda install -c conda-forge rust
 
 ```
-
 
 ## Installation
 
@@ -56,8 +55,8 @@ pip install --extra-index-url https://download.pytorch.org/whl/cpu .
 
 This project would not have been possible without the following packages:
 
-- Metadata and model handling: [metatensor](https://github.com/lab-cosmo/metatensor)
-- Atomic descriptor engine: [rascaline](https://github.com/Luthaf/rascaline)
+- Metadata and model handling: [metatensor](https://github.com/metatensor/metatensor)
+- Atomic descriptor engine: [featomic](https://github.com/metatensor/featomic)
 
 ## Documentation
 

@@ -12,15 +12,13 @@ logging.basicConfig(level=logging.DEBUG, format=logformat)
 
 
 url_resolve = {
-    "ShiftML1.0": "https://tinyurl.com/3xwec68f",
-    "ShiftML1.1": "https://tinyurl.com/53ymkhvd",
-    "ShiftML2.0": "https://tinyurl.com/bdcp647w",
+    "ShiftML1.1rev": "https://tinyurl.com/msnss4ds",
+    "ShiftML2.0rev": "https://tinyurl.com/3axupmsd",
 }
 
 resolve_outputs = {
-    "ShiftML1.0": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
-    "ShiftML1.1": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
-    "ShiftML2.0": {
+    "ShiftML1.1rev": {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)},
+    "ShiftML2.0rev": {
         "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
         "mtt::cs_iso_std": ModelOutput(quantity="", unit="ppm", per_atom=True),
         "mtt::cs_iso_ensemble": ModelOutput(quantity="", unit="ppm", per_atom=True),
@@ -28,9 +26,8 @@ resolve_outputs = {
 }
 
 resolve_fitted_species = {
-    "ShiftML1.0": set([1, 6, 7, 8, 16]),
-    "ShiftML1.1": set([1, 6, 7, 8, 16]),
-    "ShiftML2.0": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML1.1rev": set([1, 6, 7, 8, 16]),
+    "ShiftML2.0rev": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
 
 
@@ -57,7 +54,7 @@ class ShiftML(MetatensorCalculator):
         ----------
         model_version : str
             The version of the ShiftML model to use. Supported versions are
-            "ShiftML1.0".
+            "ShiftML1.1rev" and "ShiftML2.0rev".
         force_download : bool, optional
             If True, the model will be downloaded even if it is already in the cache.
             The chache-dir will be determined via the platformdirs library and should
@@ -68,21 +65,21 @@ class ShiftML(MetatensorCalculator):
         try:
             # The rascline import is necessary because
             # it is required for the scripted model
-            import rascaline.torch
+            import featomic.torch
 
-            logging.info("rascaline version: {}".format(rascaline.torch.__version__))
-            logging.info("rascaline-torch is installed, importing rascaline-torch")
+            logging.info("featomic version: {}".format(featomic.torch.__version__))
+            logging.info("featomic-torch is installed, importing featomic-torch")
 
             assert (
-                rascaline.torch.__version__ == "0.1.0.dev558"
-            ), "wrong rascaline-torch installed"
+                featomic.torch.__version__ == "0.1.0.dev597"
+            ), "wrong featomic-torch installed"
 
         except ImportError:
             raise ImportError(
-                "rascaline-torch is required for ShiftML calculators,\
+                "featomic-torch is required for ShiftML calculators,\
                  please install it using\
-                 pip install git+https://github.com/luthaf/rascaline#subdirectory\
-                 =python/rascaline-torch"
+                 pip install git+https://github.com/metatensor/featomic#subdirectory\
+                 =python/featomic-torch"
             )
 
         try:

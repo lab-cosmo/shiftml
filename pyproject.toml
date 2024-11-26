@@ -8,10 +8,10 @@ authors = [
 dependencies = [
     "numpy<2.0.0",
     "ase==3.22.1",
-    "metatensor-operations<0.2.0,>=0.1.0",
+    "metatensor-operations<0.4.0,>=0.3.0",
     "metatensor[torch]",
     "platformdirs",
-    "rascaline-torch@git+https://github.com/luthaf/rascaline@e215461#subdirectory=python/rascaline-torch",
+    "featomic-torch @git+https://github.com/metatensor/featomic@937679e#subdirectory=python/featomic-torch",
 ]
 
 readme = "README.md"
