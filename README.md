@@ -19,7 +19,7 @@ from ase.build import bulk
 from shiftml.ase import ShiftML
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML1.1rev")
+calculator = ShiftML("ShiftML2.1dev_ensemble")
 
 cs_iso = calculator.get_cs_iso(frame)
 
@@ -27,9 +27,20 @@ print(cs_iso)
 
 ```
 
+
+
+## Installation
+
+To install ShiftML, you can use clone this repository and install it using pip, a pipy release will follow soon:
+
+```
+pip install .[nanopet]
+```
+
+
 ## IMPORTANT: Install pre-instructions before PiPy release
 
-Featomic-torch, one of the main dependence of ShiftML, requires CXX and Rust compilers to be built from source.
+Featomic-torch, one of the main dependence of ShiftML models that require Featomi, requires CXX and Rust compilers to be built from source.
 Most systems come already with configured C/C++ compilers (make sure that some environment variables CC and CXX are set
 and gcc can be found), but Rust typically needs to be installed manually.
 For ease of use we strongly recommend to use some sort of package manager to install Rust, such as conda and a fresh environment.
@@ -43,12 +54,8 @@ conda install -c conda-forge rust
 
 ```
 
-## Installation
-
-To install ShiftML, you can use clone this repository and install it using pip, a pipy release will follow soon:
-
 ```
-pip install --extra-index-url https://download.pytorch.org/whl/cpu .
+pip install --extra-index-url https://download.pytorch.org/whl/cpu .[featomic]
 ```
 
 ## The code that makes it work
