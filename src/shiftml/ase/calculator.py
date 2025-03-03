@@ -19,7 +19,6 @@ url_resolve = {
     "ShiftML2.0rev": "https://tinyurl.com/3axupmsd",
     "ShiftML2.1dev": "https://zenodo.org/record/14920547/files/model.pt?download=1",
     "ShiftML2.1dev_csa": "https://zenodo.org/records/14962123/files/model_csa.pt?download=1",
-
 }
 
 cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)}
