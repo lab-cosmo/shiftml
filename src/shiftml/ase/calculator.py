@@ -7,6 +7,8 @@ from metatensor.torch.atomistic import ModelOutput
 from metatensor.torch.atomistic.ase_calculator import MetatensorCalculator
 from platformdirs import user_cache_path
 
+from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
+
 # For now we set the logging level to DEBUG
 logformat = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.DEBUG, format=logformat)
@@ -16,6 +18,7 @@ url_resolve = {
     "ShiftML1.1rev": "https://tinyurl.com/msnss4ds",
     "ShiftML2.0rev": "https://tinyurl.com/3axupmsd",
     "ShiftML2.1dev": "https://zenodo.org/record/14920547/files/model.pt?download=1",
+    "ShiftML2.1dev_csa": "https://zenodo.org/records/14962123/files/model_csa.pt?download=1",
 
 }
 
@@ -31,7 +34,8 @@ resolve_outputs = {
     "ShiftML1.1rev": cs_iso_output,
     "ShiftML2.1dev": cs_iso_output,
     "ShiftML2.0rev": cs_iso_ensemble_output,
-    "ShiftML2.1dev_ensemble": cs_iso_output
+    "ShiftML2.1dev_ensemble": cs_iso_output,
+    "ShiftML2.1dev_csa": cs_iso_output,
 }
 
 resolve_fitted_species = {
@@ -39,13 +43,17 @@ resolve_fitted_species = {
     "ShiftML2.0rev": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
     "ShiftML2.1dev": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
     "ShiftML2.1dev_ensemble": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML2.1dev_csa": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
+
+requires_metatrain = ["ShiftML2.1dev_ensemble", "ShiftML2.1dev_csa"]
 
 # prepares ensemble model
 for i in range(1,8):
     url_resolve["ShiftML2.1dev" + str(i)] = f"https://zenodo.org/records/14920832/files/model_{i}.pt?download=1"
     resolve_fitted_species["ShiftML2.1dev" + str(i)] = set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20])
     resolve_outputs["ShiftML2.1dev" + str(i) ] = cs_iso_output
+    requires_metatrain.append("ShiftML2.1dev" + str(i))
 
 def is_fitted_on(atoms, fitted_species):
     if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
@@ -83,7 +91,7 @@ def ShiftML(model_version, force_download=False):
             return ShiftML_ensemble(model_list)
         
         else:
-            return  ShiftML(model_version, force_download=force_download)
+            return  ShiftML_model(model_version, force_download=force_download)
 
 
 class ShiftML_ensemble:
@@ -161,8 +169,9 @@ class ShiftML_model(MetatensorCalculator):
                     pip install git+https://github.com/metatensor/featomic#subdirectory\
                     =python/featomic-torch"
                 )
-        
-        elif model_version in ["ShiftML2.1dev",]:
+        ### lol why doesnt this break?????
+
+        elif model_version in ["ShiftML2.1dev","ShiftML2.1dev_csa"]:
             try: # 0.1.dev300+g7a465bf
                 import metatrain
                 logging.info("metatrain version: {}".format(metatrain.__version__))
@@ -302,3 +311,20 @@ class ShiftML_model(MetatensorCalculator):
         cs_iso_ensemble = out["mtt::cs_iso_ensemble"].block(0).values.detach().to("cpu").numpy()
 
         return cs_iso_ensemble
+    
+    def get_cs_tensor(self, atoms, return_symmetric=True):
+        assert (
+            "mtt::cs_iso" in self.outputs.keys()
+        ), "model does not support chemical shielding prediction"
+
+        is_fitted_on(atoms, self.fitted_species)
+
+        out = self.run_model(atoms, self.outputs)
+        out =  out["mtt::cs_iso"].components_to_properties(["o3_mu"])
+
+        pred_vals = np.concatenate([block.values.to("cpu").numpy() for block in out.blocks()],axis=1) @ T_sym_np_inv.T
+
+        if return_symmetric:
+            pred_vals = symmetrize(pred_vals)
+
+        return pred_vals 
