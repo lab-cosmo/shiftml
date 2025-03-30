@@ -58,7 +58,7 @@ for i in range(1,8):
 
 # prepares cs_ensemble model
 for i in range(0,8):
-    url_resolve["ShiftML2.1csa_dev" + str(i)] = f"https://zenodo.org/records/15075506/files/model_{i}.pt?download=1"
+    url_resolve["ShiftML2.1csa_dev" + str(i)] = f"https://zenodo.org/records/15079415/files/model_{i}.pt?download=1"
     resolve_fitted_species["ShiftML2.1csa_dev" + str(i)] = set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20])
     resolve_outputs["ShiftML2.1csa_dev" + str(i)] = cs_iso_output
     requires_metatrain.append("ShiftML2.1csa_dev" + str(i))
