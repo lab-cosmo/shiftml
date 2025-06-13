@@ -21,7 +21,7 @@ featomic = [
     "featomic-torch @git+https://github.com/metatensor/featomic@937679e#subdirectory=python/featomic-torch",
 ]
 nanopet = [
-    "metatrain[nanopet] @ git+https://github.com/metatensor/metatrain@7a465bf",
+    "metatrain[nanopet] @ git+https://github.com/metatensor/metatrain@7a465bf"
 ]
 
 
