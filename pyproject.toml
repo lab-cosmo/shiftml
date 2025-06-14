@@ -5,27 +5,17 @@ requires-python = ">=3.9"
 authors = [
 ]
 dependencies = [
-    "numpy<2.0.0",
-    "ase==3.22.1",
+    "ase",
     "platformdirs",
+    "metatensor-learn==0.3.1",
+    "metatensor-operations==0.3.1",
+    "metatensor-torch==0.7.3",
+    "vesin",
 ]
 
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
 description = "Predictions of chemical shieldings using machine learning"
-
-[project.optional-dependencies]
-featomic = [
-    "metatensor-operations<0.4.0,>=0.3.0",
-    "metatensor[torch]",
-    "featomic-torch @git+https://github.com/metatensor/featomic@937679e#subdirectory=python/featomic-torch",
-]
-nanopet = [
-    "metatrain[nanopet] @ git+https://github.com/metatensor/metatrain@7a465bf"
-]
-
-
-
 
 [project.urls]
 homepage = "https://github.com/lab-cosmo/ShiftML"
