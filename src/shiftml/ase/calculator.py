@@ -2,35 +2,39 @@ import logging
 import os
 import urllib.request
 
+import numpy as np
 from metatensor.torch.atomistic import ModelOutput
 from metatensor.torch.atomistic.ase_calculator import MetatensorCalculator
 from platformdirs import user_cache_path
 
-# For now we set the logging level to DEBUG
+from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
+
+# For now we set the logging level to INFO
 logformat = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=logformat)
+logging.basicConfig(level=logging.INFO, format=logformat)
 
 
-url_resolve = {
-    "ShiftML1.1rev": "https://tinyurl.com/msnss4ds",
-    "ShiftML2.0rev": "https://tinyurl.com/3axupmsd",
-}
+url_resolve = {}
+
+cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)}
 
 resolve_outputs = {
-    "ShiftML1.1rev": {
-        "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)
-    },
-    "ShiftML2.0rev": {
-        "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
-        "mtt::cs_iso_std": ModelOutput(quantity="", unit="ppm", per_atom=True),
-        "mtt::cs_iso_ensemble": ModelOutput(quantity="", unit="ppm", per_atom=True),
-    },
+    "ShiftML3": cs_iso_output,
 }
 
 resolve_fitted_species = {
-    "ShiftML1.1rev": set([1, 6, 7, 8, 16]),
-    "ShiftML2.0rev": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
+
+# prepares cs_ensemble model
+for i in range(0, 8):
+    url_resolve["ShiftML3" + str(i)] = (
+        f"https://zenodo.org/records/15079415/files/model_{i}.pt?download=1"
+    )
+    resolve_fitted_species["ShiftML3" + str(i)] = set(
+        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+    )
+    resolve_outputs["ShiftML3" + str(i)] = cs_iso_output
 
 
 def is_fitted_on(atoms, fitted_species):
@@ -43,46 +47,124 @@ def is_fitted_on(atoms, fitted_species):
         )
 
 
-class ShiftML(MetatensorCalculator):
+def ShiftML(model_version, force_download=False, device=None):
+    """
+    Initialize the ShiftML calculator
+
+    Parameters
+    ----------
+    model_version : str
+        The version of the ShiftML model to use. Supported versions are
+        "ShiftML3"
+    force_download : bool, optional
+        If True, the model will be downloaded even if it is already in the cache.
+        The chache-dir will be determined via the platformdirs library and should
+        comply with user settings such as XDG_CACHE_HOME.
+        Default is False.
+    device : str, optional
+        The device to use for the model. If None, the preferred device will be saught
+        from the environment (e.g. CUDA if available), it will fall back to CPU if no
+        preffered device is found.
+        If you want to use a specific device, you can set it to "cpu" or "cuda".
+        Default is None.
+    """
+
+    # its not perfect, it is what it is...
+    if model_version in ["ShiftML3"]:
+        model_list = []
+        for i in range(0, 8):
+            model_list.append(
+                ShiftML_model(
+                    model_version + str(i), force_download=force_download, device=device
+                )
+            )
+
+        return ShiftML_ensemble(model_list)
+
+    else:
+        return ShiftML_model(
+            model_version, force_download=force_download, device=device
+        )
+
+
+class ShiftML_ensemble:
+    def __init__(self, model_list):
+        """
+        Initializes an ensemble of ShiftML models
+        """
+        self.models = model_list
+
+    def get_cs_tensor_ensemble(self, atoms, return_symmetric=True):
+        cs_tensors = []
+
+        for model in self.models:
+            out = model.get_cs_tensor(atoms, return_symmetric=return_symmetric)
+            cs_tensors.append(out)
+
+        cs_tensors = np.stack(cs_tensors, axis=-1)
+
+        # last dimension is ensemble member shape
+        cs_tensors = cs_tensors.reshape(-1, 3, 3, cs_tensors.shape[-1])
+
+        return cs_tensors
+
+    def get_cs_iso_ensemble(self, atoms):
+
+        cs_tensors = self.get_cs_tensor_ensemble(atoms, return_symmetric=True)
+        cs_isos = np.trace(cs_tensors, axis1=1, axis2=2) / 3
+
+        return cs_isos
+
+    def get_cs_iso(self, atoms):
+        """
+        Compute the shielding values for the given atoms object
+        """
+
+        cs_isos = self.get_cs_iso_ensemble(atoms)
+
+        cs_iso = np.mean(cs_isos, axis=-1)
+
+        return cs_iso
+
+    def get_cs_tensor(self, atoms, return_symmetric=True):
+        """
+        Compute the shielding tensors for the given atoms object
+        """
+
+        cs_tensors = self.get_cs_tensor_ensemble(
+            atoms, return_symmetric=return_symmetric
+        )
+
+        cs_tensors = np.mean(cs_tensors, axis=-1).reshape(-1, 3, 3)
+
+        return cs_tensors
+
+
+class ShiftML_model(MetatensorCalculator):
     """
     ShiftML calculator for ASE
     """
 
-    def __init__(self, model_version, force_download=False):
+    def __init__(self, model_version, force_download=False, device=None):
         """
         Initialize the ShiftML calculator
 
         Parameters
         ----------
         model_version : str
-            The version of the ShiftML model to use. Supported versions are
-            "ShiftML1.1rev" and "ShiftML2.0rev".
+            The version of the ShiftML model to use.
         force_download : bool, optional
             If True, the model will be downloaded even if it is already in the cache.
             The chache-dir will be determined via the platformdirs library and should
             comply with user settings such as XDG_CACHE_HOME.
             Default is False.
+        device : str, optional
+            The device to use for the model. If None, the preferred
+            device will be sought from the environment (e.g. CUDA if available),
+            it will fall back to CPU if no preferred device is found.
+            If you want to use a specific device, you can set it to "cpu" or "cuda".
+            Default is None.
         """
-
-        try:
-            # The rascline import is necessary because
-            # it is required for the scripted model
-            import featomic.torch
-
-            logging.info("featomic version: {}".format(featomic.torch.__version__))
-            logging.info("featomic-torch is installed, importing featomic-torch")
-
-            assert (
-                featomic.torch.__version__ == "0.1.0.dev597"
-            ), "wrong featomic-torch installed"
-
-        except ImportError:
-            raise ImportError(
-                "featomic-torch is required for ShiftML calculators,\
-                 please install it using\
-                 pip install git+https://github.com/metatensor/featomic#subdirectory\
-                 =python/featomic-torch"
-            )
 
         try:
             url = url_resolve[model_version]
@@ -165,13 +247,14 @@ class ShiftML(MetatensorCalculator):
             )
             raise e
 
-        super().__init__(model_file)
+        super().__init__(
+            model_file,
+            device=device,
+        )
+
         self.model_version = model_version
 
-    def get_cs_iso(self, atoms):
-        """
-        Compute the shielding values for the given atoms object
-        """
+    def get_cs_tensor(self, atoms, return_symmetric=True):
         assert (
             "mtt::cs_iso" in self.outputs.keys()
         ), "model does not support chemical shielding prediction"
@@ -179,30 +262,19 @@ class ShiftML(MetatensorCalculator):
         is_fitted_on(atoms, self.fitted_species)
 
         out = self.run_model(atoms, self.outputs)
-        cs_iso = out["mtt::cs_iso"].block(0).values.detach().numpy()
 
-        return cs_iso
+        # TODO: currently ShiftML3 predicts tensors with the label  "mtt::cs_iso"
+        # later this should be changed to "mtt::cs_tensor"
+        out = out["mtt::cs_iso"].components_to_properties(["o3_mu"])
 
-    def get_cs_iso_std(self, atoms):
-        assert (
-            "mtt::cs_iso_std" in self.outputs.keys()
-        ), "model does not support chemical shielding prediction"
+        pred_vals = (
+            np.concatenate(
+                [block.values.to("cpu").numpy() for block in out.blocks()], axis=1
+            )
+            @ T_sym_np_inv.T
+        )
 
-        is_fitted_on(atoms, self.fitted_species)
+        if return_symmetric:
+            pred_vals = symmetrize(pred_vals)
 
-        out = self.run_model(atoms, self.outputs)
-        cs_iso_std = out["mtt::cs_iso_std"].block(0).values.detach().numpy()
-
-        return cs_iso_std
-
-    def get_cs_iso_ensemble(self, atoms):
-        assert (
-            "mtt::cs_iso_ensemble" in self.outputs.keys()
-        ), "model does not support chemical shielding prediction"
-
-        is_fitted_on(atoms, self.fitted_species)
-
-        out = self.run_model(atoms, self.outputs)
-        cs_iso_ensemble = out["mtt::cs_iso_ensemble"].block(0).values.detach().numpy()
-
-        return cs_iso_ensemble
+        return pred_vals

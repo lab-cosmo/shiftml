@@ -5,3 +5,4 @@ __pycache__/
 *.egg-info/
 .tox/
 *.pt
+.DS_Store
