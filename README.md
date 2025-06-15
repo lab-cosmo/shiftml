@@ -1,6 +1,5 @@
 # ShiftML
 
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://lab-cosmo.github.io/ShiftML/latest/)
 ![Tests](https://img.shields.io/github/check-runs/lab-cosmo/ShiftML/main?logo=github&label=tests)
 
 **Disclaimer: This package is still under development and should be used with caution.**
@@ -64,6 +63,7 @@ The following models are available in ShiftML:
 - **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. 
 
 
+
 ## Advanced usage of the ShiftML3 model
 
 The following section contains advanced usage examples of the ShiftML3 model,
@@ -119,9 +119,15 @@ calculator = ShiftML("ShiftML3", device="cpu")  # run always on CPU
 calculator = ShiftML("ShiftML3", device="cuda")  # run always on GPU
 ```
 
+## Help us improve ShiftML
+If you find bugs or have suggestions for improvements, please open an issue on the [ShiftML GitHub repository](https://github.com/lab-cosmo/ShiftML/issues).
+Do you have systems for which you find that the model does not work well? - please let us know on github, or email us. We are more than happy to hear from you, and if you provide us with the systems, we can try to improve the model in the future.
+
+Are you missing chemical elements for which you would like to have chemical shielding predictions, or your systems that contain elements that are not supported by the current model? Please let us know, so we can consider adding them in the future.
+
 ## Reproducibility
 
-To ensure reproducibility of results that you generate with ShiftML, you can save the pipy package version of the ShiftML package you used to generate the results. This can be done by running the following command in your terminal (assuming you have ShiftML installed in your current Python environment):
+To ensure reproducibility of shielding predictions with ShiftML, you can save the pipy package version of the ShiftML package you used. This can be done by running the following command in your terminal (assuming you have ShiftML installed in your current Python environment):
 
 ```bash
 pip freeze | grep shiftml > shiftml_version.txt
@@ -140,6 +146,7 @@ pip install shiftml==<version>
 ## FAQ
 ### ShiftML3 – Frequently Asked Questions
 
+
 <details>
 <summary><strong>ShiftML3 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
 
@@ -147,7 +154,7 @@ ShiftML3 is built on the **Point Edge Transformer (PET)** model, which is *not p
 This can introduce tiny, random differences for atoms that are magnetically equivalent.  
 We have verified that these fluctuations are minor and do **not** harm overall accuracy.
 
-> **Tip – get identical numbers**  
+> **Tip – get identical shielding predictions**  
 > Average the predictions over all magnetically equivalent atoms.
 
 </details>
@@ -168,7 +175,7 @@ Only compare ShiftML3 to GIPAW-DFT data generated with *exactly* the same settin
 ---
 
 <details>
-<summary><strong>I used those GIPAW parameters but still see big errors. What now?</strong></summary>
+<summary><strong>I used identical GIPAW-DFT parameters but still see big errors. What now?</strong></summary>
 
 Check the model’s **uncertainty estimates** (committee variance; see “Advanced usage” above).  
 If the uncertainty is **several ×** the element’s test-set RMSE, the prediction is probably unreliable
@@ -186,7 +193,7 @@ for your structure.
    Inaccurate DFT—often the exchange–correlation functional—can be blamed.
 
 2. **Check your structures.**  
-   If candidate geometries don’t reflect experimental conditions *or* the inter-atomic potential is poor,
+   If candidate geometries don’t reflect experimental conditions *or* the inter-atomic potential used to generate structures is poor,
    both DFT and ML predictions will stray from reality.
 
 </details>
