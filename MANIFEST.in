@@ -1,0 +1,15 @@
+graft src
+
+include LICENSE
+include README.md
+include CONTRIBUTORS
+
+prune docs
+prune tests
+prune .github
+prune .tox
+
+exclude .gitignore
+exclude tox.ini
+
+global-exclude *.py[cod] __pycache__/* *.so *.dylib
