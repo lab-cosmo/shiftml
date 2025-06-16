@@ -69,7 +69,7 @@ The following models are available in ShiftML:
 The following section contains advanced usage examples of the ShiftML3 model,
 which is currently the only supperted model used in the `ShiftML` calculator.
 
-```
+```python
 from ase.build import bulk
 from shiftml.ase import ShiftML
 import numpy as np
