@@ -26,6 +26,13 @@ expected_outputs_tensors = {
 }
 
 
+expected_outputs_cs_iso_ensemble = {"ShiftML3":
+        np.array([[ 60.42126146,  57.24088394, 119.28280679,   5.62315253,
+        116.85640454,  97.67294283,  78.86602387,  27.1628475 ],
+       [ 60.13091689,  57.4300539 , 119.20077118,   6.10752558,
+        117.19963794,  97.69625321,  78.82573726,  26.65784881]])}
+
+
 def test_diamond_regression():
     """Regression test for ShiftML models."""
 
