@@ -22,15 +22,50 @@ expected_outputs_tensors = {
                 [-1.11634899, -1.05462152, 73.23578343],
             ],
         ]
-    )
+    ),
+    "ShiftML30": np.array(
+        [
+            [
+                [55.65042743, -1.63128062, -0.32191175],
+                [-1.63128062, 64.67196237, -9.39962522],
+                [-0.32191175, -9.39962522, 60.94139457],
+            ],
+            [
+                [55.24493472, 2.82685016, -1.38101845],
+                [2.82685016, 64.60677816, -4.46976634],
+                [-1.38101845, -4.46976634, 60.54103779],
+            ],
+        ]
+    ),
 }
 
 
-expected_outputs_cs_iso_ensemble = {"ShiftML3":
-        np.array([[ 60.42126146,  57.24088394, 119.28280679,   5.62315253,
-        116.85640454,  97.67294283,  78.86602387,  27.1628475 ],
-       [ 60.13091689,  57.4300539 , 119.20077118,   6.10752558,
-        117.19963794,  97.69625321,  78.82573726,  26.65784881]])}
+expected_outputs_cs_iso_ensemble = {
+    "ShiftML3": np.array(
+        [
+            [
+                60.42126146,
+                57.24088394,
+                119.28280679,
+                5.62315253,
+                116.85640454,
+                97.67294283,
+                78.86602387,
+                27.1628475,
+            ],
+            [
+                60.13091689,
+                57.4300539,
+                119.20077118,
+                6.10752558,
+                117.19963794,
+                97.69625321,
+                78.82573726,
+                26.65784881,
+            ],
+        ]
+    )
+}
 
 
 def test_diamond_regression():
@@ -75,6 +110,23 @@ def test_shiftml3_tensors():
 
     assert np.allclose(
         cs_tensor, expected_outputs_tensors["ShiftML3"], rtol=1e-4
+    ), "CS tensor values do not match expected output"
+
+
+def test_shiftml3_single_model_tensors():
+    """Regression test of one of the ShiftML3 models (model 0)"""
+    frame = bulk("C", "diamond", a=3.566)
+    model = ShiftML("ShiftML30", device="cpu")
+    cs_tensor = model.get_cs_tensor(frame, return_symmetric=True).reshape((2,3,3))
+    assert cs_tensor.shape == (2, 3, 3), "CS tensor shape mismatch"
+
+    # assert that the tensor is symmetric
+    assert np.allclose(
+        cs_tensor, cs_tensor.transpose(0, 2, 1)
+    ), "CS tensor is not symmetric"
+
+    assert np.allclose(
+        cs_tensor, expected_outputs_tensors["ShiftML30"], rtol=1e-3
     ), "CS tensor values do not match expected output"
 
 
