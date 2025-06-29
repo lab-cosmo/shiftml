@@ -2,7 +2,7 @@
 
 ![Tests](https://img.shields.io/github/check-runs/lab-cosmo/ShiftML/main?logo=github&label=tests)
 
-**Disclaimer: This package is still under development and should be used with caution.**
+**Disclaimer: As with all machine learning models, ShiftML3 should be used within its domain of applicability and in a cautious manner.**
 
 Welcome to ShitML, a python package for the prediction of chemical shieldings of organic solids and beyond.
 
