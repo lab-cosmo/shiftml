@@ -3,8 +3,8 @@ import os
 import urllib.request
 
 import numpy as np
-from metatensor.torch.atomistic import ModelOutput
-from metatensor.torch.atomistic.ase_calculator import MetatensorCalculator
+from metatomic.torch import ModelOutput
+from metatomic.torch.ase_calculator import MetatomicCalculator
 from platformdirs import user_cache_path
 
 from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
@@ -29,7 +29,7 @@ resolve_fitted_species = {
 # prepares cs_ensemble model
 for i in range(0, 8):
     url_resolve["ShiftML3" + str(i)] = (
-        f"https://zenodo.org/records/15079415/files/model_{i}.pt?download=1"
+        f"https://zenodo.org/records/15767390/files/model_{i}.pt?download=1"
     )
     resolve_fitted_species["ShiftML3" + str(i)] = set(
         [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
@@ -140,7 +140,7 @@ class ShiftML_ensemble:
         return cs_tensors
 
 
-class ShiftML_model(MetatensorCalculator):
+class ShiftML_model(MetatomicCalculator):
     """
     ShiftML calculator for ASE
     """
