@@ -117,7 +117,7 @@ def test_shiftml3_single_model_tensors():
     """Regression test of one of the ShiftML3 models (model 0)"""
     frame = bulk("C", "diamond", a=3.566)
     model = ShiftML("ShiftML30", device="cpu")
-    cs_tensor = model.get_cs_tensor(frame, return_symmetric=True).reshape((2,3,3))
+    cs_tensor = model.get_cs_tensor(frame, return_symmetric=True).reshape((2, 3, 3))
     assert cs_tensor.shape == (2, 3, 3), "CS tensor shape mismatch"
 
     # assert that the tensor is symmetric
