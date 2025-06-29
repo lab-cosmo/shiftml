@@ -29,7 +29,7 @@ resolve_fitted_species = {
 # prepares cs_ensemble model
 for i in range(0, 8):
     url_resolve["ShiftML3" + str(i)] = (
-        f"https://zenodo.org/records/15764514/files/model_{i}.pt?download=1"
+        f"https://zenodo.org/records/15767390/files/model_{i}.pt?download=1"
     )
     resolve_fitted_species["ShiftML3" + str(i)] = set(
         [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
