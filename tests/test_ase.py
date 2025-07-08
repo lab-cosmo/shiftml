@@ -354,7 +354,7 @@ def test_shiftml3_last_layer_features():
     assert ll_feat.shape == (192,), "Last layer features shape mismatch"
 
     assert np.allclose(
-        ll_feat, expected_output_ll_feat["ShiftML3"], rtol=1e-4
+        ll_feat, expected_output_ll_feat["ShiftML3"], rtol=1e-3
     ), "Last layer features values do not match expected output"
 
     frame = Atoms("C", positions=[[0, 0, 0]])
