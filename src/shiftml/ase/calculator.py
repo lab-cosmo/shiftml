@@ -22,6 +22,15 @@ resolve_outputs = {
     "ShiftML3": cs_iso_output,
 }
 
+advanced_outputs = {
+    "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
+    "mtt::aux::cs_iso_last_layer_features": ModelOutput(per_atom=True),
+}
+
+resolve_advanced_outputs = {
+    "ShiftML3": advanced_outputs,
+}
+
 resolve_fitted_species = {
     "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
@@ -35,6 +44,7 @@ for i in range(0, 8):
         [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
     )
     resolve_outputs["ShiftML3" + str(i)] = cs_iso_output
+    resolve_advanced_outputs["ShiftML3" + str(i)] = advanced_outputs
 
 
 def is_fitted_on(atoms, fitted_species):
@@ -108,6 +118,18 @@ class ShiftML_ensemble:
 
         return cs_tensors
 
+    def get_last_layer_features_ensemble(self, atoms):
+        """
+        Get the ensemble last layer features of the model for the given atoms object.
+        """
+        last_layer_features = []
+
+        for model in self.models:
+            out = model.get_last_layer_features(atoms)
+            last_layer_features.append(out)
+
+        return np.stack(last_layer_features, axis=-1)
+
     def get_cs_iso_ensemble(self, atoms):
 
         cs_tensors = self.get_cs_tensor_ensemble(atoms, return_symmetric=True)
@@ -139,6 +161,12 @@ class ShiftML_ensemble:
 
         return cs_tensors
 
+    def get_last_layer_features(self, atoms):
+        """
+        Get the last layer features of the ensemble for the given atoms object.
+        """
+        return np.mean(self.get_last_layer_features_ensemble(atoms), axis=-1)
+
 
 class ShiftML_model(MetatomicCalculator):
     """
@@ -169,6 +197,7 @@ class ShiftML_model(MetatomicCalculator):
         try:
             url = url_resolve[model_version]
             self.outputs = resolve_outputs[model_version]
+            self.advanced_outputs = resolve_advanced_outputs[model_version]
             self.fitted_species = resolve_fitted_species[model_version]
             logging.info("Found model version in url_resolve")
             logging.info(
@@ -278,3 +307,22 @@ class ShiftML_model(MetatomicCalculator):
             pred_vals = symmetrize(pred_vals)
 
         return pred_vals
+
+    def get_last_layer_features(self, atoms):
+        """
+        Get the last layer features of the model for the given atoms object.
+        """
+        assert (
+            "mtt::aux::cs_iso_last_layer_features" in self.advanced_outputs.keys()
+        ), "model does not support last layer features prediction"
+
+        is_fitted_on(atoms, self.fitted_species)
+
+        out = self.run_model(atoms, self.advanced_outputs)
+
+        return (
+            out["mtt::aux::cs_iso_last_layer_features"]
+            .block(0)
+            .values.to("cpu")
+            .numpy()
+        )
