@@ -48,13 +48,17 @@ for i in range(0, 8):
 
 
 def is_fitted_on(atoms, fitted_species):
-    if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
-        raise ValueError(
-            f"Model is fitted only for the following atomic numbers:\
-            {fitted_species}. The atomic numbers in the atoms object are:\
-            {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
-            with only the fitted species."
-        )
+    """
+    Check if the atoms object contains only species that the model is fitted on.
+    """
+    if not isinstance(atoms, list):
+        if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
+            raise ValueError(
+                f"Model is fitted only for the following atomic numbers:\
+                {fitted_species}. The atomic numbers in the atoms object are:\
+                {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
+                with only the fitted species."
+            )
 
 
 def ShiftML(model_version, force_download=False, device=None):
