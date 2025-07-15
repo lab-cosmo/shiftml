@@ -4,7 +4,7 @@
 
 **Disclaimer: As with all machine learning models, ShiftML3 should be used within its domain of applicability and in a cautious manner.**
 
-Welcome to ShitML, a python package for the prediction of chemical shieldings of organic solids and beyond.
+Welcome to ShiftML, a python package for the prediction of chemical shieldings of organic solids and beyond.
 
 ## Usage
 
