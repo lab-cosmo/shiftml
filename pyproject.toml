@@ -11,7 +11,7 @@ dependencies = [
     "metatensor-operations<0.4.0,>=0.3.0",
     "metatensor[torch]",
     "platformdirs",
-    "featomic-torch @git+https://github.com/metatensor/featomic@937679e#subdirectory=python/featomic-torch",
+    "featomic-torch"
 ]
 
 readme = "README.md"

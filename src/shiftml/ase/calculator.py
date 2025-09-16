@@ -13,11 +13,15 @@ logging.basicConfig(level=logging.DEBUG, format=logformat)
 
 url_resolve = {
     "ShiftML1.1rev": "https://tinyurl.com/msnss4ds",
+    "ShiftMLSuccinic": "https://tinyurl.com/tphh3p9y",
     "ShiftML2.0rev": "https://tinyurl.com/3axupmsd",
 }
 
 resolve_outputs = {
     "ShiftML1.1rev": {
+        "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)
+    },
+    "ShiftMLSuccinic": {
         "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)
     },
     "ShiftML2.0rev": {
@@ -28,6 +32,7 @@ resolve_outputs = {
 }
 
 resolve_fitted_species = {
+    "ShiftMLSuccinic": set([1, 6, 8]),
     "ShiftML1.1rev": set([1, 6, 7, 8, 16]),
     "ShiftML2.0rev": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
@@ -72,10 +77,12 @@ class ShiftML(MetatensorCalculator):
             logging.info("featomic version: {}".format(featomic.torch.__version__))
             logging.info("featomic-torch is installed, importing featomic-torch")
 
+            """
             assert (
                 featomic.torch.__version__ == "0.1.0.dev597"
             ), "wrong featomic-torch installed"
-
+            """
+            
         except ImportError:
             raise ImportError(
                 "featomic-torch is required for ShiftML calculators,\
