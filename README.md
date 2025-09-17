@@ -91,7 +91,7 @@ cs_committee_iso = calculator.get_cs_iso_ensemble(frame)
 cs_committee_tensor = calculator.get_cs_tensor_ensemble(frame)
 
 # Compute uncertainty estimates for the isotropic chemical shieldings
-cs_iso_uncertainty = np.std(cs_committee_iso, axis=1)
+cs_iso_uncertainty = np.std(cs_committee_iso, axis=1, ddof=1)
 
 # Compute the chemical shielding anisotropy (from mean tensor prediction)
 
