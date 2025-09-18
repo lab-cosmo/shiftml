@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    # Check all PR
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -12,33 +11,60 @@ concurrency:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-22.04
             python-version: "3.9"
+            py-arch: "x64"
           - os: ubuntu-22.04
             python-version: "3.12"
+            py-arch: "x64"
           - os: macos-14
             python-version: "3.12"
-          - os: windows-2022
+            py-arch: "arm64"
+          - os: windows-11-arm           
             python-version: "3.12"
+            py-arch: "arm64"
+
+    # Make PyTorch wheels discoverable to *all* pip calls (incl. tox-created venvs)
+    env:
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+      # Ensure tox passes env vars into its testenvs:
+      TOX_TESTENV_PASSENV: PIP_INDEX_URL PIP_EXTRA_INDEX_URL
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: setup Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.py-arch }}
 
-      - name: install tests dependencies
+      - name: Debug runner
+        shell: bash
+        run: |
+          python -V
+          echo "RUNNER_OS=$RUNNER_OS"
+          echo "ImageOS=${ImageOS:-}"
+          echo "PROCESSOR_ARCHITECTURE=${PROCESSOR_ARCHITECTURE:-}"
+
+      - name: Upgrade pip + install tox
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox
 
-      - name: run tests
+      # Optional: prove PyTorch resolves via the PyTorch index on Win11 ARM
+      - name: (Sanity) Resolve torch wheel
+        if: runner.os == 'Windows'
+        run: python -m pip install --dry-run "torch>=2.1"
+
+      - name: Run tox
         run: tox
+
