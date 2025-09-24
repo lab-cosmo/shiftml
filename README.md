@@ -8,7 +8,7 @@ Welcome to ShiftML, a python package for the prediction of chemical shieldings o
 
 ## Usage
 
-Use ShiftML with the atomsitic simulation environment to obtain fast estimates of chemical shieldings:
+Use ShiftML with the atomistic simulation environment to obtain fast estimates of chemical shieldings:
 
 ```python
 
