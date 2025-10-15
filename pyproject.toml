@@ -9,7 +9,7 @@ dependencies = [
     "platformdirs",
     "metatensor-learn >=0.3.2,<0.4",
     "metatensor-operations >=0.3.3,<0.4",
-    "metatensor-torch >=0.7.6,<0.8",
+    "metatensor-torch >=0.7.6,<0.9",
     "metatomic-torch >=0.1.2,<0.2",
     "vesin",
 ]
