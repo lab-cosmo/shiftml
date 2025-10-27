@@ -21,6 +21,9 @@ cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=Tr
 resolve_outputs = {
     "ShiftML3": cs_iso_output,
     "ShiftML3mol": cs_iso_output,
+    "ShiftML3iso": cs_iso_output,
+    "ShiftML3corr": cs_iso_output,
+    "ShiftML3_tenscorr": cs_iso_output,
 }
 
 advanced_outputs = {
@@ -31,16 +34,25 @@ advanced_outputs = {
 resolve_advanced_outputs = {
     "ShiftML3": advanced_outputs,
     "ShiftML3mol": advanced_outputs,
+    "ShiftML3iso": advanced_outputs,
+    "ShiftML3corr": advanced_outputs,
+    "ShiftML3_tenscorr": advanced_outputs,
 }
 
 resolve_fitted_species = {
     "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
     "ShiftML3mol": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML3iso": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML3corr": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML3_tenscorr": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
 
 predicts_tensor = {
     "ShiftML3": True,
     "ShiftML3mol": False,
+    "ShiftML3iso": False,
+    "ShiftML3corr": False,
+    "ShiftML3_tenscorr": True,
 }
 
 # prepares cs_ensemble model
@@ -57,17 +69,52 @@ for i in range(0, 8):
     url_resolve["ShiftML3mol" + str(i)] = (
         f"https://zenodo.org/records/17332929/files/model_{i}.pt?download=1"
     )
+    url_resolve["ShiftML3iso" + str(i)] = (
+        f"https://zenodo.org/records/17333406/files/model_{i}.pt?download=1"
+    )
+    url_resolve["ShiftML3corr" + str(i)] = (
+        f"https://zenodo.org/records/17333572/files/model_{i}.pt?download=1"
+    )
 
     resolve_fitted_species["ShiftML3mol" + str(i)] = set(
         [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
     )
+    resolve_fitted_species["ShiftML3iso" + str(i)] = set(
+        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+    )
+    resolve_fitted_species["ShiftML3corr" + str(i)] = set(
+        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+    )
+
     resolve_outputs["ShiftML3mol" + str(i)] = cs_iso_output
     resolve_advanced_outputs["ShiftML3mol" + str(i)] = advanced_outputs
+    resolve_outputs["ShiftML3iso" + str(i)] = cs_iso_output
+    resolve_advanced_outputs["ShiftML3iso" + str(i)] = advanced_outputs
+    resolve_outputs["ShiftML3corr" + str(i)] = cs_iso_output
+    resolve_advanced_outputs["ShiftML3corr" + str(i)] = advanced_outputs
+
+
 
     predicts_tensor["ShiftML3" + str(i)] = True
     predicts_tensor["ShiftML3mol" + str(i)] = False
+    predicts_tensor["ShiftML3iso" + str(i)] = False
+    predicts_tensor["ShiftML3corr" + str(i)] = False
 
+for i in range(0,8):
+    url_resolve["ShiftML3_tenscorr" + str(i)] = (
+        f"https://zenodo.org/records/17444862/files/model_{i}.pt?download=1"
+    )
+    resolve_fitted_species["ShiftML3_tenscorr" + str(i)] = set(
+        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+    )
+    resolve_outputs["ShiftML3_tenscorr" + str(i)] = cs_iso_output
+    resolve_advanced_outputs["ShiftML3_tenscorr" + str(i)] = advanced_outputs
+    predicts_tensor["ShiftML3_tenscorr" + str(i)] = True
 
+pick_which = {}
+pick_which = {"ShiftML3mol":[0,1,2,5,6,7],
+              "ShiftML3iso":[1,2,5,7],
+              "ShiftML3_tenscorr":[0,1,2,3,4,5,6,7],}
 
 def is_fitted_on(atoms, fitted_species):
     if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
@@ -102,9 +149,11 @@ def ShiftML(model_version, force_download=False, device=None):
     """
 
     # its not perfect, it is what it is...
-    if model_version in ["ShiftML3", "ShiftML3mol"]:
+    if model_version in ["ShiftML3", "ShiftML3mol", "ShiftML3iso", "ShiftML3corr",
+                         "ShiftML3_tenscorr"]:
         model_list = []
-        for i in range(0, 8):
+        pick_which_models = pick_which.get(model_version, list(range(8)))
+        for i in pick_which_models:
             model_list.append(
                 ShiftML_model(
                     model_version + str(i), force_download=force_download, device=device
@@ -355,7 +404,14 @@ class ShiftML_model(MetatomicCalculator):
 
         # TODO: currently ShiftML3 predicts tensors with the label  "mtt::cs_iso"
         # later this should be changed to "mtt::cs_tensor"
-        out = out["mtt::cs_iso"].components_to_properties(["o3_mu"])
+
+        #print(out.keys())
+        #print(out["mtt::cs_iso"].block(0))
+        #print(out["mtt::cs_iso"].block(1))
+        #print(out["mtt::cs_iso"].block(2))
+        out = out["mtt::cs_iso"].components_to_properties("o3_mu")
+
+        #print(out = out["mtt::cs_iso"])
 
         pred_vals = (
             np.concatenate(
