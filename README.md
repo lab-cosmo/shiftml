@@ -21,11 +21,13 @@ calculator = ShiftML("ShiftML3")
 cs_iso = calculator.get_cs_iso(frame)
 ```
 
+
 For more advanced predictions read also section [Advanced usage of the ShiftML3 model](#advanced-usage-of-the-shiftml3-model).
 
 ## Installation
 
 This package is available on PyPI and can be installed using pip. The recommended way to install ShiftML is to use the following command:
+**ShiftML supports Python 3.9–3.13.**
 
 ```
 pip install shiftml
