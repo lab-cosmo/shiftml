@@ -1,6 +1,9 @@
 import logging
 import os
-import urllib.request
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 import numpy as np
 from metatomic.torch import ModelOutput
@@ -55,6 +58,25 @@ def is_fitted_on(atoms, fitted_species):
             {set(atoms.get_atomic_numbers())}. Please provide an atoms object\
             with only the fitted species."
         )
+
+
+def download_with_retry(url, destination):
+    """Helper function to download data with retries on errors."""
+
+    # Retry strategy: wait 1s, 2s, 4s, 8s, 16s on 429/5xx errors
+    retry_strategy = Retry(
+        total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504]
+    )
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=retry_strategy))
+
+    # Fetch with automatic retry and error raising
+    response = session.get(url, stream=True)
+    response.raise_for_status()
+
+    with open(destination, "wb") as file:
+        for chunk in response.iter_content(chunk_size=8192):
+            file.write(chunk)
 
 
 def ShiftML(model_version, force_download=False, device=None):
@@ -247,23 +269,15 @@ class ShiftML_model(MetatomicCalculator):
                     download = True
 
             if download:
-                urllib.request.urlretrieve(url, model_file)
+                download_with_retry(url, model_file)
                 logging.info(
                     "Downloaded {} and saved to {}".format(model_version, cachedir)
                 )
 
-        except urllib.error.URLError as e:
+        except requests.exceptions.RequestException as e:
             logging.error(
-                "Failed to download {} from {}. URL Error: {}".format(
-                    model_version, url, e.reason
-                )
-            )
-            raise e
-        except urllib.error.HTTPError as e:
-            logging.error(
-                "Failed to download {} from {}.\
-                  HTTP Error: {} - {}".format(
-                    model_version, url, e.code, e.reason
+                "Failed to download {} from {}. Error: {}".format(
+                    model_version, url, e
                 )
             )
             raise e

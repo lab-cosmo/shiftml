@@ -12,6 +12,7 @@ dependencies = [
     "metatensor-torch >=0.7.6,<0.9",
     "metatomic-torch >=0.1.2,<0.2",
     "vesin",
+    "requests",
 ]
 
 readme = "README.md"
