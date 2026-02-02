@@ -1,14 +1,13 @@
 import logging
 import os
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
 import numpy as np
+import requests
 from metatomic.torch import ModelOutput
 from metatomic.torch.ase_calculator import MetatomicCalculator
 from platformdirs import user_cache_path
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
 
