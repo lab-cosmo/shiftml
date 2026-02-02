@@ -276,9 +276,7 @@ class ShiftML_model(MetatomicCalculator):
 
         except requests.exceptions.RequestException as e:
             logging.error(
-                "Failed to download {} from {}. Error: {}".format(
-                    model_version, url, e
-                )
+                "Failed to download {} from {}. Error: {}".format(model_version, url, e)
             )
             raise e
         except Exception as e:
