@@ -6,6 +6,10 @@
 
 Welcome to ShiftML, a python package for the prediction of chemical shieldings of organic solids and beyond.
 
+## Looking for quick chemical shielding predictions from your browser?
+
+Please visit [shiftml.org](shiftml.org) !
+
 ## Usage
 
 Use ShiftML with the atomistic simulation environment to obtain fast estimates of chemical shieldings:
