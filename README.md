@@ -8,7 +8,7 @@ Welcome to ShiftML, a python package for the prediction of chemical shieldings o
 
 ## Looking for quick chemical shielding predictions from your browser?
 
-Please visit [shiftml.org](shiftml.org) !
+Please visit [shiftml.org](https://shiftml.org) !
 
 ## Usage
 
