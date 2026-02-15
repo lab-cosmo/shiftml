@@ -1,6 +1,6 @@
 # ShiftML
 
-![Tests](https://img.shields.io/github/check-runs/lab-cosmo/ShiftML/main?logo=github&label=tests)
+![Tests](https://img.shields.io/github/actions/workflow/status/lab-cosmo/shiftml/tests.yml?branch=main&logo=github&label=tests)
 
 **Disclaimer: As with all machine learning models, ShiftML3 should be used within its domain of applicability and in a cautious manner.**
 
