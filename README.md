@@ -55,6 +55,13 @@ pip install shiftml
 ### Known installation issues
 The following installation issues are known:
 - Old Intel-based Macs are not supported, because torch does not support them anymore (building torch binaries).
+- We have switched recently the model engine from "metatensor.atomistic" to "metatomic". This is only a namespace issue and does not affect the models.
+**If you receive a "Not a metatomic model" error message** you probably had an earlier ShiftML release installed and the old versions model files remain in cache.
+In order to **clear the cache once**, please load the model once and overwrite the cache:
+
+```python
+calculator = ShiftML("ShiftML3", force_download=True)
+```
 
 ## The code that makes it work
 
