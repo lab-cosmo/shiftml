@@ -82,7 +82,7 @@ The following models are available in ShiftML:
 The following section contains advanced usage examples of the ShiftML3 model,
 which is currently the only supperted model used in the `ShiftML` calculator.
 
-```
+```python
 from ase.build import bulk
 from shiftml.ase import ShiftML
 import numpy as np
@@ -263,5 +263,5 @@ This package is based on the following papers:
 - A Bayesian approach to NMR crystal structure determination - Engel et al. [[2](https://doi.org/10.1039%2Fc9cp04489b)]
 - A Machine Learning Model of Chemical Shifts for Chemically and\
 Structurally Diverse Molecular Solids - Cordova et al. [[3](https://doi.org/10.1021/acs.jpcc.2c03854)]
-- A deep learning model for chemical shieldings in molecular organic solids including anisotropy - Kellner, Holmes, Rodriguez Madrid, Viscosi, Zhang, Emsley, Ceriotti  (in preparation)
+- A deep learning model for chemical shieldings in molecular organic solids including anisotropy - Kellner, Holmes, Rodriguez Madrid, Viscosi, Zhang, Emsley, Ceriotti  [[4](https://doi.org/10.1021/acs.jpclett.5c01819)]
 
