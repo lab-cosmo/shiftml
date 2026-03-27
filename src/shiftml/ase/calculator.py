@@ -4,7 +4,7 @@ import os
 import numpy as np
 import requests
 from metatomic.torch import ModelOutput
-from metatomic.torch.ase_calculator import MetatomicCalculator
+from metatomic_ase import MetatomicCalculator
 from platformdirs import user_cache_path
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
