@@ -111,8 +111,8 @@ cs_iso_uncertainty = np.std(cs_committee_iso, axis=1, ddof=1)
 cs_psa = np.linalg.eigvalsh(cs_tensor)
 ```
 
-This snippet will estimate the predicted chemical shieldings of diamond to be highly uncertain, 
-as expected and desired, given that diamond as an inorganic material is not well 
+This snippet will estimate the predicted chemical shieldings of diamond to be highly uncertain,
+as expected and desired, given that diamond as an inorganic material is not well
 represented in the training data of the model.
 
 
@@ -163,11 +163,11 @@ pip install shiftml==<version>
 <details>
 <summary><strong>ShiftML3 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
 
-ShiftML3 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.  
-This can introduce tiny, random differences for atoms that are magnetically equivalent.  
+ShiftML3 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.
+This can introduce tiny, random differences for atoms that are magnetically equivalent.
 We have verified that these fluctuations are minor and do **not** harm overall accuracy.
 
-> **Tip – get identical shielding predictions**  
+> **Tip – get identical shielding predictions**
 > Average the predictions over all magnetically equivalent atoms.
 
 </details>
@@ -177,10 +177,10 @@ We have verified that these fluctuations are minor and do **not** harm overall a
 <details>
 <summary><strong>ShiftML3 shows large errors versus my GIPAW-DFT shieldings. What’s going on?</strong></summary>
 
-Chemical-shielding calculations are *very* sensitive to the **code and convergence parameters** used.  
+Chemical-shielding calculations are *very* sensitive to the **code and convergence parameters** used.
 Only compare ShiftML3 to GIPAW-DFT data generated with *exactly* the same settings as the training set.
 
-*Reference inputs* for Quantum Espresso with the correct parameters are available in this  
+*Reference inputs* for Quantum Espresso with the correct parameters are available in this
 [Zenodo data repository](https://zenodo.org/records/7097427).
 
 </details>
@@ -190,7 +190,7 @@ Only compare ShiftML3 to GIPAW-DFT data generated with *exactly* the same settin
 <details>
 <summary><strong>I used identical GIPAW-DFT parameters but still see big errors. What now?</strong></summary>
 
-Check the model’s **uncertainty estimates** (committee variance; see “Advanced usage” above).  
+Check the model’s **uncertainty estimates** (committee variance; see “Advanced usage” above).
 If the uncertainty is **several ×** the element’s test-set RMSE, the prediction is probably unreliable
 for your structure.
 
@@ -201,11 +201,11 @@ for your structure.
 <details>
 <summary><strong>My calculated shieldings don’t correlate with experiment at all. Why?</strong></summary>
 
-1. **Validate the baseline.**  
-   Make sure reliable **GIPAW/PBE** results exist (or recompute them) and confirm they correlate with experiment.  
+1. **Validate the baseline.**
+   Make sure reliable **GIPAW/PBE** results exist (or recompute them) and confirm they correlate with experiment.
    Inaccurate DFT—often the exchange–correlation functional—can be blamed.
 
-2. **Check your structures.**  
+2. **Check your structures.**
    If candidate geometries don’t reflect experimental conditions *or* the inter-atomic potential used to generate structures is poor,
    both DFT and ML predictions will stray from reality.
 
@@ -250,10 +250,12 @@ pytest
 
 ## Contributors
 
-Matthias Kellner\
-Yuxuan Zhang\
-Ruben Rodriguez Madrid\
+Matthias Kellner
+Yuxuan Zhang
+Ruben Rodriguez Madrid
 Guillaume Fraux
+
+This project is [maintained](https://github.com/lab-cosmo/.github/blob/main/Maintainers.md) by @bananenpampe, who will reply to issues and pull requests opened on this repository as soon as possible. You can mention them directly if you did not receive an answer after a couple of days.
 
 ## References
 
@@ -264,4 +266,3 @@ This package is based on the following papers:
 - A Machine Learning Model of Chemical Shifts for Chemically and\
 Structurally Diverse Molecular Solids - Cordova et al. [[3](https://doi.org/10.1021/acs.jpcc.2c03854)]
 - A deep learning model for chemical shieldings in molecular organic solids including anisotropy - Kellner, Holmes, Rodriguez Madrid, Viscosi, Zhang, Emsley, Ceriotti  [[4](https://doi.org/10.1021/acs.jpclett.5c01819)]
-
