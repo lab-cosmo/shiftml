@@ -22,10 +22,7 @@ cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=Tr
 
 resolve_outputs = {
     "ShiftML3": cs_iso_output,
-    "ShiftML3mol": cs_iso_output,
-    "ShiftML3iso": cs_iso_output,
-    "ShiftML3corr": cs_iso_output,
-    "ShiftML3_tenscorr": cs_iso_output,
+    "ShiftML4": cs_iso_output,
 }
 
 advanced_outputs = {
@@ -35,26 +32,12 @@ advanced_outputs = {
 
 resolve_advanced_outputs = {
     "ShiftML3": advanced_outputs,
-    "ShiftML3mol": advanced_outputs,
-    "ShiftML3iso": advanced_outputs,
-    "ShiftML3corr": advanced_outputs,
-    "ShiftML3_tenscorr": advanced_outputs,
+    "ShiftML4": advanced_outputs,
 }
 
 resolve_fitted_species = {
     "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
-    "ShiftML3mol": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
-    "ShiftML3iso": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
-    "ShiftML3corr": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
-    "ShiftML3_tenscorr": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
-}
-
-predicts_tensor = {
-    "ShiftML3": True,
-    "ShiftML3mol": False,
-    "ShiftML3iso": False,
-    "ShiftML3corr": False,
-    "ShiftML3_tenscorr": True,
+    "ShiftML4": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
 
 # prepares cs_ensemble model
@@ -68,55 +51,16 @@ for i in range(0, 8):
     resolve_outputs["ShiftML3" + str(i)] = cs_iso_output
     resolve_advanced_outputs["ShiftML3" + str(i)] = advanced_outputs
 
-    url_resolve["ShiftML3mol" + str(i)] = (
-        f"https://zenodo.org/records/17332929/files/model_{i}.pt?download=1"
-    )
-    url_resolve["ShiftML3iso" + str(i)] = (
-        f"https://zenodo.org/records/17333406/files/model_{i}.pt?download=1"
-    )
-    url_resolve["ShiftML3corr" + str(i)] = (
-        f"https://zenodo.org/records/17333572/files/model_{i}.pt?download=1"
-    )
-
-    resolve_fitted_species["ShiftML3mol" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-    resolve_fitted_species["ShiftML3iso" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-    resolve_fitted_species["ShiftML3corr" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-
-    resolve_outputs["ShiftML3mol" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3mol" + str(i)] = advanced_outputs
-    resolve_outputs["ShiftML3iso" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3iso" + str(i)] = advanced_outputs
-    resolve_outputs["ShiftML3corr" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3corr" + str(i)] = advanced_outputs
-
-
-
-    predicts_tensor["ShiftML3" + str(i)] = True
-    predicts_tensor["ShiftML3mol" + str(i)] = False
-    predicts_tensor["ShiftML3iso" + str(i)] = False
-    predicts_tensor["ShiftML3corr" + str(i)] = False
-
-for i in range(0,8):
-    url_resolve["ShiftML3_tenscorr" + str(i)] = (
+for i in range(0, 8):
+    url_resolve["ShiftML4" + str(i)] = (
         f"https://zenodo.org/records/17444862/files/model_{i}.pt?download=1"
     )
-    resolve_fitted_species["ShiftML3_tenscorr" + str(i)] = set(
+    resolve_fitted_species["ShiftML4" + str(i)] = set(
         [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
     )
-    resolve_outputs["ShiftML3_tenscorr" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3_tenscorr" + str(i)] = advanced_outputs
-    predicts_tensor["ShiftML3_tenscorr" + str(i)] = True
+    resolve_outputs["ShiftML4" + str(i)] = cs_iso_output
+    resolve_advanced_outputs["ShiftML4" + str(i)] = advanced_outputs
 
-pick_which = {}
-pick_which = {"ShiftML3mol":[0,1,2,5,6,7],
-              "ShiftML3iso":[1,2,5,7],
-              "ShiftML3_tenscorr":[0,1,2,3,4,5,6,7],}
 
 def is_fitted_on(atoms, fitted_species):
     if not set(atoms.get_atomic_numbers()).issubset(fitted_species):
@@ -155,7 +99,7 @@ def ShiftML(model_version, force_download=False, device=None):
     ----------
     model_version : str
         The version of the ShiftML model to use. Supported versions are
-        "ShiftML3"
+        "ShiftML3" and "ShiftML4"
     force_download : bool, optional
         If True, the model will be downloaded even if it is already in the cache.
         The chache-dir will be determined via the platformdirs library and should
@@ -170,20 +114,16 @@ def ShiftML(model_version, force_download=False, device=None):
     """
 
     # its not perfect, it is what it is...
-    if model_version in ["ShiftML3", "ShiftML3mol", "ShiftML3iso", "ShiftML3corr",
-                         "ShiftML3_tenscorr"]:
+    if model_version in ["ShiftML3", "ShiftML4"]:
         model_list = []
-        pick_which_models = pick_which.get(model_version, list(range(8)))
-        for i in pick_which_models:
+        for i in range(0, 8):
             model_list.append(
                 ShiftML_model(
                     model_version + str(i), force_download=force_download, device=device
                 )
             )
-        
-        pred_tens = predicts_tensor[model_version]
 
-        return ShiftML_ensemble(model_list, pred_tens)
+        return ShiftML_ensemble(model_list)
 
     else:
         return ShiftML_model(
@@ -192,17 +132,14 @@ def ShiftML(model_version, force_download=False, device=None):
 
 
 class ShiftML_ensemble:
-    def __init__(self, model_list, predicts_tensor):
+    def __init__(self, model_list):
         """
         Initializes an ensemble of ShiftML models
         """
         self.models = model_list
-        self.predicts_tensor = predicts_tensor
 
     def get_cs_tensor_ensemble(self, atoms, return_symmetric=True):
         cs_tensors = []
-
-        assert self.predicts_tensor, "model does not support tensor prediction"
 
         for model in self.models:
             out = model.get_cs_tensor(atoms, return_symmetric=return_symmetric)
@@ -229,17 +166,8 @@ class ShiftML_ensemble:
 
     def get_cs_iso_ensemble(self, atoms):
 
-        if self.predicts_tensor:
-            cs_tensors = self.get_cs_tensor_ensemble(atoms, return_symmetric=True)
-            cs_isos = np.trace(cs_tensors, axis1=1, axis2=2) / 3
-        else:
-            cs_isos = []
-
-            for model in self.models:
-                out = model.get_cs_iso(atoms)
-                cs_isos.append(out)
-
-            cs_isos = np.stack(cs_isos, axis=-1)
+        cs_tensors = self.get_cs_tensor_ensemble(atoms, return_symmetric=True)
+        cs_isos = np.trace(cs_tensors, axis1=1, axis2=2) / 3
 
         return cs_isos
 
@@ -258,8 +186,6 @@ class ShiftML_ensemble:
         """
         Compute the shielding tensors for the given atoms object
         """
-
-        assert self.predicts_tensor, "model does not support tensor prediction"
 
         cs_tensors = self.get_cs_tensor_ensemble(
             atoms, return_symmetric=return_symmetric
@@ -289,8 +215,6 @@ class ShiftML_model(MetatomicCalculator):
         ----------
         model_version : str
             The version of the ShiftML model to use.
-        predicts_tensor : bool
-            Whether the model predicts full chemical shift tensors or only isotropic values.
         force_download : bool, optional
             If True, the model will be downloaded even if it is already in the cache.
             The chache-dir will be determined via the platformdirs library and should
@@ -309,7 +233,6 @@ class ShiftML_model(MetatomicCalculator):
             self.outputs = resolve_outputs[model_version]
             self.advanced_outputs = resolve_advanced_outputs[model_version]
             self.fitted_species = resolve_fitted_species[model_version]
-            self.predicts_tensor = predicts_tensor[model_version]
             logging.info("Found model version in url_resolve")
             logging.info(
                 "Resolving model version to model files at url: {}".format(url)
@@ -383,46 +306,19 @@ class ShiftML_model(MetatomicCalculator):
         )
 
         self.model_version = model_version
-    
-    def get_cs_iso(self, atoms):
-        """
-        Compute the isotropic shielding values for the given atoms object
-        """
-
-        assert not self.predicts_tensor, "model does not support direct\
-              isotropic prediction"
-
-        assert (
-            "mtt::cs_iso" in self.outputs.keys()
-        ), "model does not support chemical shielding prediction"
-
-        is_fitted_on(atoms, self.fitted_species)
-
-        out = self.run_model(atoms, self.outputs)
-
-        return out["mtt::cs_iso"].block(0).values.to("cpu").numpy()
 
     def get_cs_tensor(self, atoms, return_symmetric=True):
         assert (
             "mtt::cs_iso" in self.outputs.keys()
         ), "model does not support chemical shielding prediction"
-        
-        assert self.predicts_tensor, "model does not support tensor prediction"
-        
+
         is_fitted_on(atoms, self.fitted_species)
 
         out = self.run_model(atoms, self.outputs)
 
         # TODO: currently ShiftML3 predicts tensors with the label  "mtt::cs_iso"
         # later this should be changed to "mtt::cs_tensor"
-
-        #print(out.keys())
-        #print(out["mtt::cs_iso"].block(0))
-        #print(out["mtt::cs_iso"].block(1))
-        #print(out["mtt::cs_iso"].block(2))
-        out = out["mtt::cs_iso"].components_to_properties("o3_mu")
-
-        #print(out = out["mtt::cs_iso"])
+        out = out["mtt::cs_iso"].components_to_properties(["o3_mu"])
 
         pred_vals = (
             np.concatenate(

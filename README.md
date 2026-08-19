@@ -2,7 +2,7 @@
 
 ![Tests](https://img.shields.io/github/actions/workflow/status/lab-cosmo/shiftml/tests.yml?branch=main&logo=github&label=tests)
 
-**Disclaimer: As with all machine learning models, ShiftML3 should be used within its domain of applicability and in a cautious manner.**
+**Disclaimer: As with all machine learning models, ShiftML models should be used within its domain of applicability and in a cautious manner.**
 
 Welcome to ShiftML, a python package for the prediction of chemical shieldings of organic solids and beyond.
 
@@ -20,13 +20,13 @@ from ase.build import bulk
 from shiftml.ase import ShiftML
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML3")
+calculator = ShiftML("ShiftML4")
 
 cs_iso = calculator.get_cs_iso(frame)
 ```
 
 
-For more advanced predictions read also section [Advanced usage of the ShiftML3 model](#advanced-usage-of-the-shiftml3-model).
+For more advanced predictions read also section [Advanced usage of the ShiftML models](#advanced-usage-of-the-shiftml-models).
 
 ## Installation
 
@@ -60,7 +60,7 @@ The following installation issues are known:
 In order to **clear the cache once**, please load the model once and overwrite the cache:
 
 ```python
-calculator = ShiftML("ShiftML3", force_download=True)
+calculator = ShiftML("ShiftML4", force_download=True)
 ```
 
 ## The code that makes it work
@@ -73,14 +73,15 @@ This project would not have been possible without the following packages:
 
 ## Available models
 The following models are available in ShiftML:
-- **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. [preprint](https://arxiv.org/abs/2506.13146)
+- **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. [preprint](https://arxiv.org/abs/2506.13146). Select the model as `ShiftML("ShiftML3")` in the ASE calculator.
+- **ShiftML4** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy, on the PBE0 molecular corrected GIPAW-PBE data . It is trained on a dataset of 1.2 million chemical shieldings from 12600 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out PBE0-molecular corrected GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.40 ppm for $^{1}\text{H}$ and 2.22 ppm for $^{13}\text{C}$, compared to 0.42 ppm and 2.24 ppm for ShiftML3, of the same hold-out set computed at the GIPAW-PBE data. Select the model as `ShiftML("ShiftML4")` in the ASE calculator.
 
 
 
-## Advanced usage of the ShiftML3 model
+## Advanced usage of the ShiftML models
 
-The following section contains advanced usage examples of the ShiftML3 model,
-which is currently the only supperted model used in the `ShiftML` calculator.
+The following section contains advanced usage examples of the ShiftML4 model,
+which is currently one of the two supported models used in the `ShiftML` calculator.
 
 ```python
 from ase.build import bulk
@@ -88,7 +89,7 @@ from shiftml.ase import ShiftML
 import numpy as np
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML3")
+calculator = ShiftML("ShiftML4")
 
 # Get isotropic chemical shieldings
 cs_iso = calculator.get_cs_iso(frame)
@@ -121,15 +122,15 @@ represented in the training data of the model.
 If you want to force the calculator to download model files again you can use the `force_download` argument:
 
 ```python
-calculator = ShiftML("ShiftML3", force_download=True)
+calculator = ShiftML("ShiftML4", force_download=True)
 ```
 
 The model will look for the preferred device to run the model on (per default it will use the GPU if available, otherwise it will use the CPU). But you can also specify the device manually:
 
 ```python
-calculator = ShiftML("ShiftML3", device="cpu")  # run always on CPU
+calculator = ShiftML("ShiftML4", device="cpu")  # run always on CPU
 
-calculator = ShiftML("ShiftML3", device="cuda")  # run always on GPU
+calculator = ShiftML("ShiftML4", device="cuda")  # run always on GPU
 ```
 
 ## Help us improve ShiftML
@@ -157,13 +158,13 @@ pip install shiftml==<version>
 ```
 
 ## FAQ
-### ShiftML3 – Frequently Asked Questions
+### ShiftML3 and ShiftML4 – Frequently Asked Questions
 
 
 <details>
-<summary><strong>ShiftML3 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
+<summary><strong>ShiftML3/ShiftML4 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
 
-ShiftML3 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.
+ShiftML3/ShiftML4 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.
 This can introduce tiny, random differences for atoms that are magnetically equivalent.
 We have verified that these fluctuations are minor and do **not** harm overall accuracy.
 
@@ -175,10 +176,10 @@ We have verified that these fluctuations are minor and do **not** harm overall a
 ---
 
 <details>
-<summary><strong>ShiftML3 shows large errors versus my GIPAW-DFT shieldings. What’s going on?</strong></summary>
+<summary><strong>ShiftML3/ShiftML4 shows large errors versus my GIPAW-DFT shieldings. What’s going on?</strong></summary>
 
 Chemical-shielding calculations are *very* sensitive to the **code and convergence parameters** used.
-Only compare ShiftML3 to GIPAW-DFT data generated with *exactly* the same settings as the training set.
+Only compare ShiftML3/ShiftML4 to GIPAW-DFT data generated with *exactly* the same settings as the training set.
 
 *Reference inputs* for Quantum Espresso with the correct parameters are available in this
 [Zenodo data repository](https://zenodo.org/records/7097427).
