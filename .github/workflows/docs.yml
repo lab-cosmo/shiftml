@@ -39,6 +39,7 @@ jobs:
           REF_KIND=$(echo $GITHUB_REF | cut -d / -f2)
           if [[ "$REF_KIND" == "tags" ]]; then
               TAG=${GITHUB_REF#refs/tags/}
+              rm -rf $TAG
               mv ../docs/build/html $TAG
           else
               rm -rf latest
