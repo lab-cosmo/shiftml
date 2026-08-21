@@ -40,26 +40,31 @@ resolve_fitted_species = {
     "ShiftML4": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
 }
 
-# prepares cs_ensemble model
-for i in range(0, 8):
-    url_resolve["ShiftML3" + str(i)] = (
-        f"https://zenodo.org/records/15767390/files/model_{i}.pt?download=1"
-    )
-    resolve_fitted_species["ShiftML3" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-    resolve_outputs["ShiftML3" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3" + str(i)] = advanced_outputs
+# the ensemble members making up each model version. For ShiftML4, model_0 on
+# zenodo is a duplicate upload of model_1 (identical weights), so it is skipped
+# to avoid double-counting that member in the ensemble.
+resolve_ensemble_members = {
+    "ShiftML3": list(range(0, 8)),
+    "ShiftML4": list(range(1, 8)),
+}
 
-for i in range(0, 8):
-    url_resolve["ShiftML4" + str(i)] = (
-        f"https://zenodo.org/records/17444862/files/model_{i}.pt?download=1"
-    )
-    resolve_fitted_species["ShiftML4" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-    resolve_outputs["ShiftML4" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML4" + str(i)] = advanced_outputs
+zenodo_record = {
+    "ShiftML3": 15767390,
+    "ShiftML4": 17444862,
+}
+
+# prepares cs_ensemble model
+for model_version, members in resolve_ensemble_members.items():
+    record = zenodo_record[model_version]
+    for i in members:
+        url_resolve[model_version + str(i)] = (
+            f"https://zenodo.org/records/{record}/files/model_{i}.pt?download=1"
+        )
+        resolve_fitted_species[model_version + str(i)] = set(
+            [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+        )
+        resolve_outputs[model_version + str(i)] = cs_iso_output
+        resolve_advanced_outputs[model_version + str(i)] = advanced_outputs
 
 
 def is_fitted_on(atoms, fitted_species):
@@ -114,9 +119,9 @@ def ShiftML(model_version, force_download=False, device=None):
     """
 
     # its not perfect, it is what it is...
-    if model_version in ["ShiftML3", "ShiftML4"]:
+    if model_version in resolve_ensemble_members:
         model_list = []
-        for i in range(0, 8):
+        for i in resolve_ensemble_members[model_version]:
             model_list.append(
                 ShiftML_model(
                     model_version + str(i), force_download=force_download, device=device

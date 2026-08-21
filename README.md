@@ -74,7 +74,7 @@ This project would not have been possible without the following packages:
 ## Available models
 The following models are available in ShiftML:
 - **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. [preprint](https://arxiv.org/abs/2506.13146). Select the model as `ShiftML("ShiftML3")` in the ASE calculator.
-- **ShiftML4** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy, on the PBE0 molecular corrected GIPAW-PBE data . It is trained on a dataset of 1.2 million chemical shieldings from 12600 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out PBE0-molecular corrected GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.40 ppm for $^{1}\text{H}$ and 2.22 ppm for $^{13}\text{C}$, compared to 0.42 ppm and 2.24 ppm for ShiftML3, of the same hold-out set computed at the GIPAW-PBE data. Select the model as `ShiftML("ShiftML4")` in the ASE calculator.
+- **ShiftML4** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy, on PBE0 molecular corrected GIPAW-PBE data. It is trained on a dataset of 1.2 million chemical shieldings from 12600 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out PBE0-molecular corrected GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.40 ppm for $^{1}\text{H}$ and 2.22 ppm for $^{13}\text{C}$, compared to 0.42 ppm and 2.24 ppm for ShiftML3, of the same hold-out set computed at the GIPAW-PBE data. Select the model as `ShiftML("ShiftML4")` in the ASE calculator.
 
 
 
@@ -117,7 +117,7 @@ as expected and desired, given that diamond as an inorganic material is not well
 represented in the training data of the model.
 
 
-### Further usage options of the ShiftML calculator and ShiftML3 model
+### Further usage options of the ShiftML calculator and ShiftML3/ShiftML4 models.
 
 If you want to force the calculator to download model files again you can use the `force_download` argument:
 
