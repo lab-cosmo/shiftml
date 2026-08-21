@@ -650,8 +650,10 @@ def test_last_layer_features(model_version):
 
     assert ll_feat.shape == (192,), "Last layer features shape mismatch"
 
+    # atol floors the tolerance: some features are close to zero, where a pure
+    # relative tolerance is tighter than the ~1e-5 float32 noise between platforms
     assert np.allclose(
-        ll_feat, expected_output_ll_feat[model_version], rtol=1e-3
+        ll_feat, expected_output_ll_feat[model_version], rtol=1e-3, atol=1e-4
     ), "Last layer features values do not match expected output"
 
     frame = Atoms("C", positions=[[0, 0, 0]])
