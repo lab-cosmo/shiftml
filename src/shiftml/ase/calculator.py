@@ -4,11 +4,16 @@ import os
 import numpy as np
 import requests
 from metatomic.torch import ModelOutput
-from metatomic.torch.ase_calculator import MetatomicCalculator
+
+# ``MetatomicCalculator`` used to live in ``metatomic.torch.ase_calculator``; it
+# moved to its own ``metatomic-ase`` package, and the old import path is
+# deprecated.
+from metatomic_ase import MetatomicCalculator
 from platformdirs import user_cache_path
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from shiftml.utils.loading import load_model
 from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
 
 # For now we set the logging level to INFO
@@ -18,7 +23,12 @@ logging.basicConfig(level=logging.INFO, format=logformat)
 
 url_resolve = {}
 
-cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)}
+# ShiftML predicts a shielding tensor.  Its ``quantity`` and ``unit`` are left
+# empty on purpose: this is what the model files themselves declare, and recent
+# metatomic validates the requested unit against the list of units it knows
+# about (which does not contain "ppm").  Values are returned in ppm regardless,
+# no unit conversion ever takes place.
+cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="", sample_kind="atom")}
 
 resolve_outputs = {
     "ShiftML3": cs_iso_output,
@@ -26,8 +36,8 @@ resolve_outputs = {
 }
 
 advanced_outputs = {
-    "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
-    "mtt::aux::cs_iso_last_layer_features": ModelOutput(per_atom=True),
+    "mtt::cs_iso": ModelOutput(quantity="", unit="", sample_kind="atom"),
+    "mtt::aux::cs_iso_last_layer_features": ModelOutput(sample_kind="atom"),
 }
 
 resolve_advanced_outputs = {
@@ -48,6 +58,10 @@ resolve_ensemble_members = {
     "ShiftML4": list(range(1, 8)),
 }
 
+# These records hold the models exactly as published.  Whichever
+# metatomic-torch wrote those archives is irrelevant:
+# :py:func:`shiftml.utils.loading.load_model` always rebuilds the wrapper with
+# the metatomic that is installed, so no re-upload is ever needed.
 zenodo_record = {
     "ShiftML3": 15767390,
     "ShiftML4": 17444862,
@@ -305,8 +319,13 @@ class ShiftML_model(MetatomicCalculator):
             )
             raise e
 
+        # ``load_model`` rebuilds the model's metatomic wrapper with the
+        # installed metatomic, whatever release exported the file.  Handing the
+        # loaded model (rather than the path) to ``MetatomicCalculator`` is what
+        # makes ShiftML independent of the metatomic version the models were
+        # exported with.
         super().__init__(
-            model_file,
+            load_model(model_file),
             device=device,
         )
 

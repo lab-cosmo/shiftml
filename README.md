@@ -31,7 +31,7 @@ For more advanced predictions read also section [Advanced usage of the ShiftML m
 ## Installation
 
 This package is available on PyPI and can be installed using pip. The recommended way to install ShiftML is to use the following command:
-**ShiftML supports Python 3.9–3.13.**
+**ShiftML supports Python 3.10–3.13.**
 
 ```
 pip install shiftml
