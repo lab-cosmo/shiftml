@@ -2,6 +2,7 @@ graft src
 
 include LICENSE
 include README.md
+include CHANGELOG.md
 include CONTRIBUTORS
 
 prune docs
@@ -12,4 +13,4 @@ prune .tox
 exclude .gitignore
 exclude tox.ini
 
-global-exclude *.py[cod] __pycache__/* *.so *.dylib
+global-exclude *.py[cod] __pycache__/* *.so *.dylib .DS_Store
