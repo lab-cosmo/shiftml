@@ -1,16 +1,21 @@
 [project]
 name = "shiftml"
 version = "0.1.1"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
 ]
 dependencies = [
     "ase",
     "platformdirs",
-    "metatensor-learn >=0.3.2,<0.4",
-    "metatensor-operations >=0.3.3,<0.4",
-    "metatensor-torch >=0.7.6,<0.9",
-    "metatomic-torch >=0.1.2,<0.2",
+    # ShiftML only uses the TorchScript classes of metatensor-torch (through the
+    # exported models) and the metatomic model/calculator API.  The pure-python
+    # `metatensor-operations` and `metatensor-learn` packages are *not* used at
+    # run time: everything the models need from them is already inlined in the
+    # TorchScript archives.  Dropping them removes the main source of version
+    # conflicts with other metatensor-based packages (metatrain, upet, ...).
+    "metatensor-torch >=0.10,<0.11",
+    "metatomic-torch >=0.1.17,<0.2",
+    "metatomic-ase >=0.1.1,<0.2",
     "vesin",
     "requests",
 ]
@@ -24,6 +29,11 @@ homepage = "https://github.com/lab-cosmo/ShiftML"
 # documentation = "TODO"
 repository = "https://github.com/lab-cosmo/ShiftML"
 
+
+
+[tool.isort]
+# keep `isort` and `black` from fighting over multi-line imports
+profile = "black"
 
 
 [build-system]

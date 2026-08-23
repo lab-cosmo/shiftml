@@ -4,11 +4,16 @@ import os
 import numpy as np
 import requests
 from metatomic.torch import ModelOutput
-from metatomic.torch.ase_calculator import MetatomicCalculator
+
+# ``MetatomicCalculator`` used to live in ``metatomic.torch.ase_calculator``; it
+# moved to its own ``metatomic-ase`` package, and the old import path is
+# deprecated.
+from metatomic_ase import MetatomicCalculator
 from platformdirs import user_cache_path
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from shiftml.utils.loading import load_model
 from shiftml.utils.tensorial import T_sym_np_inv, symmetrize
 
 # For now we set the logging level to INFO
@@ -18,35 +23,62 @@ logging.basicConfig(level=logging.INFO, format=logformat)
 
 url_resolve = {}
 
-cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True)}
+# ShiftML predicts a shielding tensor.  Its ``quantity`` and ``unit`` are left
+# empty on purpose: this is what the model files themselves declare, and recent
+# metatomic validates the requested unit against the list of units it knows
+# about (which does not contain "ppm").  Values are returned in ppm regardless,
+# no unit conversion ever takes place.
+cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="", sample_kind="atom")}
 
 resolve_outputs = {
     "ShiftML3": cs_iso_output,
+    "ShiftML4": cs_iso_output,
 }
 
 advanced_outputs = {
-    "mtt::cs_iso": ModelOutput(quantity="", unit="ppm", per_atom=True),
-    "mtt::aux::cs_iso_last_layer_features": ModelOutput(per_atom=True),
+    "mtt::cs_iso": ModelOutput(quantity="", unit="", sample_kind="atom"),
+    "mtt::aux::cs_iso_last_layer_features": ModelOutput(sample_kind="atom"),
 }
 
 resolve_advanced_outputs = {
     "ShiftML3": advanced_outputs,
+    "ShiftML4": advanced_outputs,
 }
 
 resolve_fitted_species = {
     "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    "ShiftML4": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+}
+
+# the ensemble members making up each model version. For ShiftML4, model_0 on
+# zenodo is a duplicate upload of model_1 (identical weights), so it is skipped
+# to avoid double-counting that member in the ensemble.
+resolve_ensemble_members = {
+    "ShiftML3": list(range(0, 8)),
+    "ShiftML4": list(range(1, 8)),
+}
+
+# These records hold the models exactly as published.  Whichever
+# metatomic-torch wrote those archives is irrelevant:
+# :py:func:`shiftml.utils.loading.load_model` always rebuilds the wrapper with
+# the metatomic that is installed, so no re-upload is ever needed.
+zenodo_record = {
+    "ShiftML3": 15767390,
+    "ShiftML4": 17444862,
 }
 
 # prepares cs_ensemble model
-for i in range(0, 8):
-    url_resolve["ShiftML3" + str(i)] = (
-        f"https://zenodo.org/records/15767390/files/model_{i}.pt?download=1"
-    )
-    resolve_fitted_species["ShiftML3" + str(i)] = set(
-        [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-    )
-    resolve_outputs["ShiftML3" + str(i)] = cs_iso_output
-    resolve_advanced_outputs["ShiftML3" + str(i)] = advanced_outputs
+for model_version, members in resolve_ensemble_members.items():
+    record = zenodo_record[model_version]
+    for i in members:
+        url_resolve[model_version + str(i)] = (
+            f"https://zenodo.org/records/{record}/files/model_{i}.pt?download=1"
+        )
+        resolve_fitted_species[model_version + str(i)] = set(
+            [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
+        )
+        resolve_outputs[model_version + str(i)] = cs_iso_output
+        resolve_advanced_outputs[model_version + str(i)] = advanced_outputs
 
 
 def is_fitted_on(atoms, fitted_species):
@@ -86,7 +118,7 @@ def ShiftML(model_version, force_download=False, device=None):
     ----------
     model_version : str
         The version of the ShiftML model to use. Supported versions are
-        "ShiftML3"
+        "ShiftML3" and "ShiftML4"
     force_download : bool, optional
         If True, the model will be downloaded even if it is already in the cache.
         The chache-dir will be determined via the platformdirs library and should
@@ -101,9 +133,9 @@ def ShiftML(model_version, force_download=False, device=None):
     """
 
     # its not perfect, it is what it is...
-    if model_version in ["ShiftML3"]:
+    if model_version in resolve_ensemble_members:
         model_list = []
-        for i in range(0, 8):
+        for i in resolve_ensemble_members[model_version]:
             model_list.append(
                 ShiftML_model(
                     model_version + str(i), force_download=force_download, device=device
@@ -287,8 +319,13 @@ class ShiftML_model(MetatomicCalculator):
             )
             raise e
 
+        # ``load_model`` rebuilds the model's metatomic wrapper with the
+        # installed metatomic, whatever release exported the file.  Handing the
+        # loaded model (rather than the path) to ``MetatomicCalculator`` is what
+        # makes ShiftML independent of the metatomic version the models were
+        # exported with.
         super().__init__(
-            model_file,
+            load_model(model_file),
             device=device,
         )
 

@@ -6,8 +6,12 @@ from ase import Atoms
 from ase.build import bulk
 
 from shiftml.ase import ShiftML
+from shiftml.ase.calculator import resolve_ensemble_members
 
-expected_outputs = {"ShiftML3": np.array([70.39079043, 70.4060931])}
+expected_outputs = {
+    "ShiftML3": np.array([70.39079043, 70.4060931]),
+    "ShiftML4": np.array([96.64889468, 97.20188181]),
+}
 
 expected_outputs_tensors = {
     "ShiftML3": np.array(
@@ -38,8 +42,35 @@ expected_outputs_tensors = {
             ],
         ]
     ),
+    "ShiftML4": np.array(
+        [
+            [
+                [96.85077443, -3.0357784, -4.56176351],
+                [-3.0357784, 98.44419061, -1.0511704],
+                [-4.56176351, -1.0511704, 94.65171898],
+            ],
+            [
+                [97.36443632, -2.45374251, -4.2977706],
+                [-2.45374251, 98.86575493, -1.27111783],
+                [-4.2977706, -1.27111783, 95.37545419],
+            ],
+        ]
+    ),
+    "ShiftML41": np.array(
+        [
+            [
+                [106.07212586, -7.52502376, -4.40938846],
+                [-7.52502376, 117.40121492, -8.17602736],
+                [-4.40938846, -8.17602736, 108.79979117],
+            ],
+            [
+                [108.98967731, -7.40468743, -4.53289187],
+                [-7.40468743, 120.79024057, -10.52324604],
+                [-4.53289187, -10.52324604, 111.35247847],
+            ],
+        ]
+    ),
 }
-
 
 expected_outputs_cs_iso_ensemble = {
     "ShiftML3": np.array(
@@ -65,7 +96,29 @@ expected_outputs_cs_iso_ensemble = {
                 26.65784881,
             ],
         ]
-    )
+    ),
+    "ShiftML4": np.array(
+        [
+            [
+                110.75771065,
+                116.96930041,
+                78.62527331,
+                126.99642698,
+                93.63963989,
+                36.13712648,
+                113.41678499,
+            ],
+            [
+                113.71079878,
+                117.13290472,
+                78.694438,
+                127.06369759,
+                93.47083788,
+                36.7736733,
+                113.56682241,
+            ],
+        ]
+    ),
 }
 
 expected_output_ll_feat = {
@@ -265,7 +318,204 @@ expected_output_ll_feat = {
             0.78689915,
         ],
         dtype=np.float32,
-    )
+    ),
+    "ShiftML4": np.array(
+        [
+            0.5609825,
+            2.7172568,
+            -0.2877852,
+            -2.184326,
+            0.69747245,
+            1.224881,
+            1.96371,
+            1.1648024,
+            -1.5328699,
+            1.4358202,
+            -2.67571,
+            0.4286151,
+            -1.4513013,
+            -0.00947646,
+            -2.448284,
+            -1.1643007,
+            1.7976757,
+            -0.41772932,
+            1.2626259,
+            -1.0997202,
+            0.6980895,
+            3.476351,
+            -1.993495,
+            -1.603404,
+            -1.8804408,
+            1.2517653,
+            1.8202511,
+            -2.9050562,
+            -1.818648,
+            1.8017226,
+            3.4879706,
+            0.57003593,
+            0.02294639,
+            1.8398455,
+            -1.1948487,
+            -0.15684387,
+            0.02379738,
+            1.9590023,
+            -2.943575,
+            -1.3291196,
+            -0.15528461,
+            1.4327166,
+            -2.6197124,
+            -1.260122,
+            -1.2199229,
+            2.4372013,
+            -1.2791785,
+            -0.83276856,
+            -0.7957949,
+            1.7635416,
+            0.3861704,
+            0.2581546,
+            -3.1573355,
+            1.0968258,
+            -2.70159,
+            1.2474861,
+            0.06080331,
+            1.8160388,
+            5.250097,
+            -0.646122,
+            2.4826846,
+            2.321469,
+            -1.8388216,
+            0.8493403,
+            -1.286049,
+            0.23613875,
+            -2.4943995,
+            -3.8924496,
+            2.9062877,
+            1.2949632,
+            -0.81811476,
+            0.8265231,
+            2.2870865,
+            -0.5593248,
+            -0.25755468,
+            -1.4845562,
+            -2.515249,
+            3.5113537,
+            -2.1467674,
+            1.0289403,
+            0.26602185,
+            -2.29845,
+            0.14669003,
+            -1.745042,
+            -1.7547624,
+            2.1772492,
+            3.1875,
+            1.2409151,
+            0.4121313,
+            -3.928384,
+            0.6138999,
+            -1.8740951,
+            0.56199795,
+            -0.21587221,
+            2.3386557,
+            -1.875455,
+            -3.9023604,
+            0.33731937,
+            0.51424223,
+            3.8338406,
+            0.31544456,
+            -3.6975858,
+            0.9740005,
+            -0.4960635,
+            1.7996023,
+            -2.2457736,
+            0.90574026,
+            0.48627016,
+            -0.42695808,
+            0.28299555,
+            0.50194484,
+            -1.1265019,
+            1.5202895,
+            -0.8755849,
+            2.1213164,
+            -3.2362905,
+            -0.6852894,
+            -2.2612538,
+            -1.7326864,
+            -1.2749962,
+            2.3432746,
+            -1.1327437,
+            1.7813282,
+            -1.1808871,
+            -0.85365474,
+            -0.06679466,
+            0.6423766,
+            -1.5178019,
+            -3.9741275,
+            1.7487878,
+            -2.2107108,
+            0.7179121,
+            3.0379379,
+            -4.7341375,
+            -2.0121598,
+            -0.7929834,
+            2.3139746,
+            0.46207577,
+            0.31054285,
+            -2.622459,
+            2.0132356,
+            0.42263696,
+            -1.9220926,
+            -3.7250633,
+            -0.80735224,
+            0.9803001,
+            1.0274355,
+            -2.3097692,
+            -3.8272228,
+            2.372414,
+            -0.88321495,
+            1.6486676,
+            -1.478035,
+            1.7919647,
+            -2.0753734,
+            -2.1555984,
+            1.9121484,
+            -3.5307746,
+            -0.9733287,
+            -0.19253857,
+            -0.5609595,
+            0.26890165,
+            0.7109786,
+            2.7552617,
+            0.798691,
+            -2.1650026,
+            -2.9551065,
+            0.5118226,
+            -0.54392976,
+            2.854548,
+            0.61760014,
+            -1.1296579,
+            -0.9485795,
+            1.65296,
+            -0.54690534,
+            2.127556,
+            1.5512067,
+            4.7153425,
+            -0.65564454,
+            1.1271966,
+            1.1976011,
+            2.7976863,
+            2.3150752,
+            -2.9805737,
+            -2.011856,
+            -1.9681007,
+            -1.7609714,
+            -0.8324414,
+            -0.12800367,
+            1.5711534,
+            -0.4451204,
+            1.083728,
+        ],
+        dtype=np.float32,
+    ),
 }
 
 
@@ -298,9 +548,10 @@ def test_shiftml1_size_extensivity_test():
         ), f"{key} failed regression test"
 
 
-def test_shiftml3_tensors():
+@pytest.mark.parametrize("model_version", ["ShiftML3", "ShiftML4"])
+def test_tensors(model_version):
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML3", device="cpu")
+    model = ShiftML(model_version, device="cpu")
     cs_tensor = model.get_cs_tensor(frame, return_symmetric=True)
     assert cs_tensor.shape == (2, 3, 3), "CS tensor shape mismatch"
 
@@ -310,14 +561,58 @@ def test_shiftml3_tensors():
     ), "CS tensor is not symmetric"
 
     assert np.allclose(
-        cs_tensor, expected_outputs_tensors["ShiftML3"], rtol=1e-4
+        cs_tensor, expected_outputs_tensors[model_version], rtol=1e-4
     ), "CS tensor values do not match expected output"
 
 
-def test_shiftml3_single_model_tensors():
-    """Regression test of one of the ShiftML3 models (model 0)"""
+@pytest.mark.parametrize("model_version", ["ShiftML3", "ShiftML4"])
+def test_cs_iso_ensemble(model_version):
+    """Regression test for the per-member isotropic shieldings of the ensemble."""
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML30", device="cpu")
+    model = ShiftML(model_version, device="cpu")
+    cs_iso_ensemble = model.get_cs_iso_ensemble(frame)
+
+    n_members = len(resolve_ensemble_members[model_version])
+    assert cs_iso_ensemble.shape == (
+        2,
+        n_members,
+    ), "CS iso ensemble shape mismatch"
+
+    assert np.allclose(
+        cs_iso_ensemble, expected_outputs_cs_iso_ensemble[model_version], rtol=1e-4
+    ), "CS iso ensemble values do not match expected output"
+
+    # the ensemble mean is what get_cs_iso returns
+    assert np.allclose(
+        cs_iso_ensemble.mean(axis=-1), model.get_cs_iso(frame), rtol=1e-4
+    ), "CS iso is not the mean over the ensemble members"
+
+
+@pytest.mark.parametrize("model_version", ["ShiftML3", "ShiftML4"])
+def test_ensemble_members_are_distinct(model_version):
+    """Guard against a duplicated model being uploaded twice to zenodo.
+
+    ShiftML4 model_0 and model_1 are the same exported model, which is why
+    model_0 is left out of the ensemble; double-counting a member biases the
+    ensemble mean and understates its spread.
+    """
+    frame = bulk("C", "diamond", a=3.566)
+    model = ShiftML(model_version, device="cpu")
+    cs_iso_ensemble = model.get_cs_iso_ensemble(frame)
+
+    n_members = cs_iso_ensemble.shape[-1]
+    for i in range(n_members):
+        for j in range(i + 1, n_members):
+            assert not np.array_equal(
+                cs_iso_ensemble[:, i], cs_iso_ensemble[:, j]
+            ), f"{model_version} members {i} and {j} predict identical values"
+
+
+@pytest.mark.parametrize("model_version", ["ShiftML30", "ShiftML41"])
+def test_single_model_tensors(model_version):
+    """Regression test of one of the ensemble members (model 0)"""
+    frame = bulk("C", "diamond", a=3.566)
+    model = ShiftML(model_version, device="cpu")
     cs_tensor = model.get_cs_tensor(frame, return_symmetric=True).reshape((2, 3, 3))
     assert cs_tensor.shape == (2, 3, 3), "CS tensor shape mismatch"
 
@@ -327,15 +622,16 @@ def test_shiftml3_single_model_tensors():
     ), "CS tensor is not symmetric"
 
     assert np.allclose(
-        cs_tensor, expected_outputs_tensors["ShiftML30"], rtol=1e-3
+        cs_tensor, expected_outputs_tensors[model_version], rtol=1e-3
     ), "CS tensor values do not match expected output"
 
 
-def test_shftml3_fail_invalid_species():
-    """Test ShiftML1.1rev for non-fitted species"""
+@pytest.mark.parametrize("model_version", ["ShiftML3", "ShiftML4"])
+def test_fail_invalid_species(model_version):
+    """Test ShiftML models for non-fitted species"""
 
     frame = bulk("Si", "diamond", a=3.566)
-    model = ShiftML("ShiftML3", device="cpu")
+    model = ShiftML(model_version, device="cpu")
     with pytest.raises(ValueError) as exc_info:
         model.get_cs_iso(frame)
 
@@ -345,16 +641,19 @@ def test_shftml3_fail_invalid_species():
     )
 
 
-def test_shiftml3_last_layer_features():
-    """Test ShiftML3 last layer features extraction"""
+@pytest.mark.parametrize("model_version", ["ShiftML3", "ShiftML4"])
+def test_last_layer_features(model_version):
+    """Test last layer features extraction"""
     frame = bulk("C", "diamond", a=3.566)
-    model = ShiftML("ShiftML3", device="cpu")
+    model = ShiftML(model_version, device="cpu")
     ll_feat = model.get_last_layer_features(frame)[0]
 
     assert ll_feat.shape == (192,), "Last layer features shape mismatch"
 
+    # atol floors the tolerance: some features are close to zero, where a pure
+    # relative tolerance is tighter than the ~1e-5 float32 noise between platforms
     assert np.allclose(
-        ll_feat, expected_output_ll_feat["ShiftML3"], rtol=1e-3
+        ll_feat, expected_output_ll_feat[model_version], rtol=1e-3, atol=1e-4
     ), "Last layer features values do not match expected output"
 
     frame = Atoms("C", positions=[[0, 0, 0]])

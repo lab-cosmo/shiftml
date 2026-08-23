@@ -2,7 +2,7 @@
 
 ![Tests](https://img.shields.io/github/actions/workflow/status/lab-cosmo/shiftml/tests.yml?branch=main&logo=github&label=tests)
 
-**Disclaimer: As with all machine learning models, ShiftML3 should be used within its domain of applicability and in a cautious manner.**
+**Disclaimer: As with all machine learning models, ShiftML models should be used within its domain of applicability and in a cautious manner.**
 
 Welcome to ShiftML, a python package for the prediction of chemical shieldings of organic solids and beyond.
 
@@ -20,18 +20,18 @@ from ase.build import bulk
 from shiftml.ase import ShiftML
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML3")
+calculator = ShiftML("ShiftML4")
 
 cs_iso = calculator.get_cs_iso(frame)
 ```
 
 
-For more advanced predictions read also section [Advanced usage of the ShiftML3 model](#advanced-usage-of-the-shiftml3-model).
+For more advanced predictions read also section [Advanced usage of the ShiftML models](#advanced-usage-of-the-shiftml-models).
 
 ## Installation
 
 This package is available on PyPI and can be installed using pip. The recommended way to install ShiftML is to use the following command:
-**ShiftML supports Python 3.9–3.13.**
+**ShiftML supports Python 3.10–3.13.**
 
 ```
 pip install shiftml
@@ -60,7 +60,64 @@ The following installation issues are known:
 In order to **clear the cache once**, please load the model once and overwrite the cache:
 
 ```python
-calculator = ShiftML("ShiftML3", force_download=True)
+calculator = ShiftML("ShiftML4", force_download=True)
+```
+
+## Using ShiftML together with metatrain, PET-MAD or uPET
+
+ShiftML deliberately keeps its dependency surface as small as possible, so that
+it can live in the same environment as other packages of the metatensor
+ecosystem:
+
+- it depends on `metatensor-torch`, `metatomic-torch` and `metatomic-ase`, and
+  tracks the versions used by recent `metatrain` releases;
+- it does **not** depend on `metatensor-operations` or `metatensor-learn`.
+  Those are only needed to *train* models; everything the ShiftML models need
+  from them is already compiled into the published TorchScript files.
+
+The model files published on Zenodo were exported against an older
+`metatensor-torch`. ShiftML rebuilds their metatomic wrapper every time they are
+loaded (see [Model files and metatomic versions](#model-files-and-metatomic-versions)),
+so you never have to worry about which release exported them.
+
+## Model files and metatomic versions
+
+Each ShiftML model is distributed as eight TorchScript archives, one per
+committee member. Every archive contains the scripted network *and* a thin
+`AtomisticModel` wrapper around it, built by whichever `metatomic-torch` was
+installed when the model was exported.
+
+The network ages well — every TorchScript class and operator it uses keeps a
+compatible schema. The wrapper does not: recent `metatomic-torch` expects
+attributes on it that did not exist when the published models were written, and
+`metatomic.torch.load_atomistic_model()` therefore refuses to open them.
+
+So ShiftML never uses the wrapper that came with the file. On every load it
+takes the network out and builds a fresh wrapper with the installed metatomic:
+
+1. the archive is opened with `torch.jit.load`, which still works;
+2. the scripted network is taken out of the old wrapper *as-is* — no weight is
+   read, converted or re-initialised;
+3. the neighbor-list request that lived on the old wrapper is re-attached;
+4. a fresh `metatomic.torch.AtomisticModel` is built around it.
+
+This happens inside `ShiftML(...)`, once per committee member, and costs about
+0.1 s each. The model file on disk is never modified, and predictions are
+exactly the ones the file encodes.
+
+It is deliberately unconditional rather than a fix-up for old files. Any future
+change to `AtomisticModel` breaks every previously exported model, however
+recently it was written, and re-wrapping is the fix in those cases too — so
+ShiftML keeps working across metatomic releases without needing new model files
+or a new release of its own.
+
+If you want a model file that other engines can open directly — LAMMPS, i-PI, or
+plain metatomic — save the re-wrapped model:
+
+```python
+from shiftml.utils.loading import load_model
+
+load_model("model_0.pt").save("model_0_for_current_metatomic.pt")
 ```
 
 ## The code that makes it work
@@ -73,14 +130,15 @@ This project would not have been possible without the following packages:
 
 ## Available models
 The following models are available in ShiftML:
-- **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. [preprint](https://arxiv.org/abs/2506.13146)
+- **ShiftML3** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy. It is trained on a dataset of 1.4 million chemical shieldings from 14000 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.43 ppm for $^{1}\text{H}$ and 2.32 ppm for $^{13}\text{C}$. [preprint](https://arxiv.org/abs/2506.13146). Select the model as `ShiftML("ShiftML3")` in the ASE calculator.
+- **ShiftML4** : A model trained on a large dataset of chemical shieldings in organic solids, including anisotropy, on PBE0 molecular corrected GIPAW-PBE data. It is trained on a dataset of 1.2 million chemical shieldings from 12600 organic crystals and can predict chemical shieldings for a wide range of organic solids. Containing at most the following 12 elements: H, C, N, O, S, F, P, Cl, Na, Ca, Mg and K. Against hold-out PBE0-molecular corrected GIPAW-DFT data the model achieves isotropic shielding prediction accuracies (RMSE) of 0.40 ppm for $^{1}\text{H}$ and 2.22 ppm for $^{13}\text{C}$, compared to 0.42 ppm and 2.24 ppm for ShiftML3, of the same hold-out set computed at the GIPAW-PBE data. Select the model as `ShiftML("ShiftML4")` in the ASE calculator.
 
 
 
-## Advanced usage of the ShiftML3 model
+## Advanced usage of the ShiftML models
 
-The following section contains advanced usage examples of the ShiftML3 model,
-which is currently the only supperted model used in the `ShiftML` calculator.
+The following section contains advanced usage examples of the ShiftML4 model,
+which is currently one of the two supported models used in the `ShiftML` calculator.
 
 ```python
 from ase.build import bulk
@@ -88,7 +146,7 @@ from shiftml.ase import ShiftML
 import numpy as np
 
 frame = bulk("C", "diamond", a=3.566)
-calculator = ShiftML("ShiftML3")
+calculator = ShiftML("ShiftML4")
 
 # Get isotropic chemical shieldings
 cs_iso = calculator.get_cs_iso(frame)
@@ -116,20 +174,20 @@ as expected and desired, given that diamond as an inorganic material is not well
 represented in the training data of the model.
 
 
-### Further usage options of the ShiftML calculator and ShiftML3 model
+### Further usage options of the ShiftML calculator and ShiftML3/ShiftML4 models.
 
 If you want to force the calculator to download model files again you can use the `force_download` argument:
 
 ```python
-calculator = ShiftML("ShiftML3", force_download=True)
+calculator = ShiftML("ShiftML4", force_download=True)
 ```
 
 The model will look for the preferred device to run the model on (per default it will use the GPU if available, otherwise it will use the CPU). But you can also specify the device manually:
 
 ```python
-calculator = ShiftML("ShiftML3", device="cpu")  # run always on CPU
+calculator = ShiftML("ShiftML4", device="cpu")  # run always on CPU
 
-calculator = ShiftML("ShiftML3", device="cuda")  # run always on GPU
+calculator = ShiftML("ShiftML4", device="cuda")  # run always on GPU
 ```
 
 ## Help us improve ShiftML
@@ -157,13 +215,13 @@ pip install shiftml==<version>
 ```
 
 ## FAQ
-### ShiftML3 – Frequently Asked Questions
+### ShiftML3 and ShiftML4 – Frequently Asked Questions
 
 
 <details>
-<summary><strong>ShiftML3 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
+<summary><strong>ShiftML3/ShiftML4 predictions aren’t identical for magnetically equivalent atoms. Why?</strong></summary>
 
-ShiftML3 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.
+ShiftML3/ShiftML4 is built on the **Point Edge Transformer (PET)** model, which is *not perfectly rotationally invariant*.
 This can introduce tiny, random differences for atoms that are magnetically equivalent.
 We have verified that these fluctuations are minor and do **not** harm overall accuracy.
 
@@ -175,10 +233,10 @@ We have verified that these fluctuations are minor and do **not** harm overall a
 ---
 
 <details>
-<summary><strong>ShiftML3 shows large errors versus my GIPAW-DFT shieldings. What’s going on?</strong></summary>
+<summary><strong>ShiftML3/ShiftML4 shows large errors versus my GIPAW-DFT shieldings. What’s going on?</strong></summary>
 
 Chemical-shielding calculations are *very* sensitive to the **code and convergence parameters** used.
-Only compare ShiftML3 to GIPAW-DFT data generated with *exactly* the same settings as the training set.
+Only compare ShiftML3/ShiftML4 to GIPAW-DFT data generated with *exactly* the same settings as the training set.
 
 *Reference inputs* for Quantum Espresso with the correct parameters are available in this
 [Zenodo data repository](https://zenodo.org/records/7097427).
