@@ -82,10 +82,12 @@ so you never have to worry about which release exported them.
 
 ## Model files and metatomic versions
 
-Each ShiftML model is distributed as eight TorchScript archives, one per
-committee member. Every archive contains the scripted network *and* a thin
-`AtomisticModel` wrapper around it, built by whichever `metatomic-torch` was
-installed when the model was exported.
+Each ShiftML model is distributed as a set of TorchScript archives, one per
+committee member: eight for ShiftML3, and seven for ShiftML4 (its Zenodo record
+holds eight files, but `model_0` is a duplicate upload of `model_1` and is
+skipped, so that member is not counted twice). Every archive contains the
+scripted network *and* a thin `AtomisticModel` wrapper around it, built by
+whichever `metatomic-torch` was installed when the model was exported.
 
 The network ages well — every TorchScript class and operator it uses keeps a
 compatible schema. The wrapper does not: recent `metatomic-torch` expects
