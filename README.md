@@ -63,65 +63,6 @@ In order to **clear the cache once**, please load the model once and overwrite t
 calculator = ShiftML("ShiftML4", force_download=True)
 ```
 
-## Using ShiftML together with metatrain, PET-MAD or uPET
-
-ShiftML deliberately keeps its dependency surface as small as possible, so that
-it can live in the same environment as other packages of the metatensor
-ecosystem:
-
-- it depends on `metatensor-torch`, `metatomic-torch` and `metatomic-ase`, and
-  tracks the versions used by recent `metatrain` releases;
-- it does **not** depend on `metatensor-operations` or `metatensor-learn`.
-  Those are only needed to *train* models; everything the ShiftML models need
-  from them is already compiled into the published TorchScript files.
-
-The model files published on Zenodo were exported against an older
-`metatensor-torch`. ShiftML rebuilds their metatomic wrapper every time they are
-loaded (see [Model files and metatomic versions](#model-files-and-metatomic-versions)),
-so you never have to worry about which release exported them.
-
-## Model files and metatomic versions
-
-Each ShiftML model is distributed as a set of TorchScript archives, one per
-committee member: eight for ShiftML3, and seven for ShiftML4 (its Zenodo record
-holds eight files, but `model_0` is a duplicate upload of `model_1` and is
-skipped, so that member is not counted twice). Every archive contains the
-scripted network *and* a thin `AtomisticModel` wrapper around it, built by
-whichever `metatomic-torch` was installed when the model was exported.
-
-The network ages well — every TorchScript class and operator it uses keeps a
-compatible schema. The wrapper does not: recent `metatomic-torch` expects
-attributes on it that did not exist when the published models were written, and
-`metatomic.torch.load_atomistic_model()` therefore refuses to open them.
-
-So ShiftML never uses the wrapper that came with the file. On every load it
-takes the network out and builds a fresh wrapper with the installed metatomic:
-
-1. the archive is opened with `torch.jit.load`, which still works;
-2. the scripted network is taken out of the old wrapper *as-is* — no weight is
-   read, converted or re-initialised;
-3. the neighbor-list request that lived on the old wrapper is re-attached;
-4. a fresh `metatomic.torch.AtomisticModel` is built around it.
-
-This happens inside `ShiftML(...)`, once per committee member, and costs about
-0.1 s each. The model file on disk is never modified, and predictions are
-exactly the ones the file encodes.
-
-It is deliberately unconditional rather than a fix-up for old files. Any future
-change to `AtomisticModel` breaks every previously exported model, however
-recently it was written, and re-wrapping is the fix in those cases too — so
-ShiftML keeps working across metatomic releases without needing new model files
-or a new release of its own.
-
-If you want a model file that other engines can open directly — LAMMPS, i-PI, or
-plain metatomic — save the re-wrapped model:
-
-```python
-from shiftml.utils.loading import load_model
-
-load_model("model_0.pt").save("model_0_for_current_metatomic.pt")
-```
-
 ## The code that makes it work
 
 This project would not have been possible without the following packages:
