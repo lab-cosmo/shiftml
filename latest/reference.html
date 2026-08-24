@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API reference &#8212; ShiftML 0.2.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ShiftML documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-shiftml">
+<span id="api-reference"></span><h1>API reference<a class="headerlink" href="#module-shiftml" title="Link to this heading">¶</a></h1>
+<section id="module-shiftml.utils.loading">
+<span id="model-loading"></span><h2>Model loading<a class="headerlink" href="#module-shiftml.utils.loading" title="Link to this heading">¶</a></h2>
+<p>Loading ShiftML models across metatomic versions.</p>
+<p>A ShiftML model file is a TorchScript archive containing the scripted network
+<em>and</em> a thin <code class="xref py py-class docutils literal notranslate"><span class="pre">metatomic.torch.AtomisticModel</span></code> wrapper around it, built
+by whichever <code class="docutils literal notranslate"><span class="pre">metatomic-torch</span></code> was installed when the model was exported.</p>
+<p>The network ages well: every TorchScript class and operator it uses
+(<code class="docutils literal notranslate"><span class="pre">metatensor.TensorMap</span></code>, <code class="docutils literal notranslate"><span class="pre">metatomic.System</span></code>, …) keeps a compatible schema,
+so <code class="docutils literal notranslate"><span class="pre">torch.jit.load</span></code> opens the 2025 archives under current releases without
+complaint.  The <em>wrapper</em> does not: recent <code class="docutils literal notranslate"><span class="pre">metatomic-torch</span></code> expects
+attributes on it that did not exist back then, and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">metatomic.torch.load_atomistic_model()</span></code> therefore fails with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">AttributeError</span><span class="p">:</span> <span class="s1">'RecursiveScriptModule'</span> <span class="nb">object</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span>
+                <span class="s1">'_model_capabilities_outputs_names'</span>
+</pre></div>
+</div>
+<p>So ShiftML never uses the wrapper that came with the file.  It takes the network
+out and builds a fresh wrapper with the installed metatomic, every time a model
+is loaded.  Nothing is read from or written to the model file beyond
+<code class="docutils literal notranslate"><span class="pre">torch.jit.load</span></code>, and the network is reused verbatim, so predictions are
+exactly the ones the file encodes.</p>
+<p>This is deliberately <em>not</em> conditional on the version that exported the file.
+Any future <code class="docutils literal notranslate"><span class="pre">AtomisticModel</span></code> change breaks every previously exported model, no
+matter how recently it was written, and re-wrapping is the fix in all of those
+cases too.  Always re-wrapping costs about 0.04 s per model over a plain load
+and removes a whole class of “which release wrote this file” bugs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="shiftml.utils.loading.load_model">
+<span class="sig-prename descclassname"><span class="pre">shiftml.utils.loading.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extensions_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AtomisticModel</span></span></span><a class="headerlink" href="#shiftml.utils.loading.load_model" title="Link to this definition">¶</a></dt>
+<dd><p>Load a ShiftML model file, wrapped for the installed metatomic.</p>
+<p>A drop-in replacement for
+<code class="xref py py-func docutils literal notranslate"><span class="pre">metatomic.torch.load_atomistic_model()</span></code> that additionally accepts
+model files written by older <code class="docutils literal notranslate"><span class="pre">metatomic-torch</span></code> releases – which is what
+every currently published ShiftML model is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – path to a ShiftML <code class="docutils literal notranslate"><span class="pre">.pt</span></code> model file</p></li>
+<li><p><strong>extensions_directory</strong> – directory containing the TorchScript extensions
+required by the model, if any</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ShiftML</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-shiftml.utils.loading">Model loading</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">ShiftML documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, ShiftML developers.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/reference.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
