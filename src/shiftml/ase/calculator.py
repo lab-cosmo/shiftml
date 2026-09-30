@@ -33,6 +33,7 @@ cs_iso_output = {"mtt::cs_iso": ModelOutput(quantity="", unit="", sample_kind="a
 resolve_outputs = {
     "ShiftML3": cs_iso_output,
     "ShiftML4": cs_iso_output,
+    "ShiftML4mol": cs_iso_output,
 }
 
 advanced_outputs = {
@@ -43,11 +44,14 @@ advanced_outputs = {
 resolve_advanced_outputs = {
     "ShiftML3": advanced_outputs,
     "ShiftML4": advanced_outputs,
+    "ShiftML4mol": advanced_outputs,
 }
 
 resolve_fitted_species = {
     "ShiftML3": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
     "ShiftML4": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]),
+    # no potassium: the molecular training set contains no K
+    "ShiftML4mol": set([1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 20]),
 }
 
 # the ensemble members making up each model version. For ShiftML4, model_0 on
@@ -56,6 +60,7 @@ resolve_fitted_species = {
 resolve_ensemble_members = {
     "ShiftML3": list(range(0, 8)),
     "ShiftML4": list(range(1, 8)),
+    "ShiftML4mol": list(range(0, 8)),
 }
 
 # These records hold the models exactly as published.  Whichever
@@ -65,6 +70,7 @@ resolve_ensemble_members = {
 zenodo_record = {
     "ShiftML3": 15767390,
     "ShiftML4": 17444862,
+    "ShiftML4mol": 23072102,
 }
 
 # prepares cs_ensemble model
@@ -74,9 +80,9 @@ for model_version, members in resolve_ensemble_members.items():
         url_resolve[model_version + str(i)] = (
             f"https://zenodo.org/records/{record}/files/model_{i}.pt?download=1"
         )
-        resolve_fitted_species[model_version + str(i)] = set(
-            [1, 6, 7, 8, 9, 11, 12, 15, 16, 17, 19, 20]
-        )
+        resolve_fitted_species[model_version + str(i)] = resolve_fitted_species[
+            model_version
+        ]
         resolve_outputs[model_version + str(i)] = cs_iso_output
         resolve_advanced_outputs[model_version + str(i)] = advanced_outputs
 
@@ -118,7 +124,8 @@ def ShiftML(model_version, force_download=False, device=None):
     ----------
     model_version : str
         The version of the ShiftML model to use. Supported versions are
-        "ShiftML3" and "ShiftML4"
+        "ShiftML3" and "ShiftML4" for molecular solids, and "ShiftML4mol" for
+        isolated molecules
     force_download : bool, optional
         If True, the model will be downloaded even if it is already in the cache.
         The chache-dir will be determined via the platformdirs library and should

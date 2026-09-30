@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 from ase import Atoms
-from ase.build import bulk
+from ase.build import bulk, molecule
 
 from shiftml.ase import ShiftML
 from shiftml.ase.calculator import resolve_ensemble_members
@@ -666,3 +666,562 @@ def test_last_layer_features(model_version):
 
     # assert that they are equal to zero
     assert not np.any(ll_feat), "Last layer features for single atom should be zero"
+
+
+# Molecular models are trained on isolated molecules, so they are tested on a
+# molecule (acetamide, no periodic boundary conditions) rather than on the
+# diamond crystal used above.
+MOLECULAR_MODELS = ["ShiftML4mol"]
+
+# float32 noise is ~1e-4 ppm, which a pure relative tolerance does not cover for
+# the near-zero off-diagonal tensor components; 1e-3 ppm is still negligible
+MOLECULE_ATOL = 1e-3
+
+expected_outputs_molecule = {
+    "ShiftML4mol": np.array(
+        [
+            -67.7019207,
+            7.46164007,
+            146.85052892,
+            166.08415287,
+            26.26352101,
+            30.0015234,
+            29.56172587,
+            29.44332809,
+            26.70140958,
+        ]
+    ),
+}
+
+expected_outputs_molecule_tensors = {
+    "ShiftML4mol": np.array(
+        [
+            [
+                [-171.04140871, 21.71560769, 2.53911283],
+                [21.71560769, -331.70150789, -4.67890532],
+                [2.53911283, -4.67890532, 299.63715449],
+            ],
+            [
+                [-69.68595407, 20.97874591, -0.46858831],
+                [20.97874591, -7.97486217, -0.86945864],
+                [-0.46858831, -0.86945864, 100.04573644],
+            ],
+            [
+                [169.29153831, -95.57671048, 6.19966225],
+                [-95.57671048, 110.1524049, 2.38082059],
+                [6.19966225, 2.38082059, 161.10764356],
+            ],
+            [
+                [196.10465184, 3.80338025, 3.23040823],
+                [3.80338025, 157.45532921, -0.55297114],
+                [3.23040823, -0.55297114, 144.69247755],
+            ],
+            [
+                [25.72146252, -1.10734972, -0.08342639],
+                [-1.10734972, 30.91681826, -1.72647311],
+                [-0.08342639, -1.72647311, 22.15228224],
+            ],
+            [
+                [32.00461749, -3.02184835, 0.84005218],
+                [-3.02184835, 30.88705596, -0.90339549],
+                [0.84005218, -0.90339549, 27.11289674],
+            ],
+            [
+                [29.35519781, 0.85686115, 2.12893029],
+                [0.85686115, 29.90543958, 3.13654073],
+                [2.12893029, 3.13654073, 29.42454023],
+            ],
+            [
+                [29.06039245, 0.53905812, -2.47353003],
+                [0.53905812, 27.9700134, -2.62356554],
+                [-2.47353003, -2.62356554, 31.29957843],
+            ],
+            [
+                [33.293819, -0.68656343, 1.2053408],
+                [-0.68656343, 23.52881053, -0.21437061],
+                [1.2053408, -0.21437061, 23.28159922],
+            ],
+        ]
+    ),
+    "ShiftML4mol0": np.array(
+        [
+            [
+                [-167.80500113, 25.39878336, -0.13790594],
+                [25.39878336, -328.20240339, -0.59436489],
+                [-0.13790594, -0.59436489, 295.13274869],
+            ],
+            [
+                [-68.46968818, 19.9809658, -0.91346584],
+                [19.9809658, -9.73436878, -1.03822549],
+                [-0.91346584, -1.03822549, 100.09922636],
+            ],
+            [
+                [169.43899879, -94.81195355, 6.23558578],
+                [-94.81195355, 110.26942524, 3.78651468],
+                [6.23558578, 3.78651468, 162.61621814],
+            ],
+            [
+                [196.25102005, 3.30722004, 3.34919628],
+                [3.30722004, 157.35108382, 0.1175999],
+                [3.34919628, 0.1175999, 143.78550543],
+            ],
+            [
+                [26.57709292, -1.92102537, 0.0961771],
+                [-1.92102537, 30.00027547, -1.72004661],
+                [0.0961771, -1.72004661, 20.13614794],
+            ],
+            [
+                [32.23834433, -3.18796301, 0.80546834],
+                [-3.18796301, 31.36846397, -0.3503759],
+                [0.80546834, -0.3503759, 27.30998848],
+            ],
+            [
+                [30.07531805, 0.42533908, 2.27212548],
+                [0.42533908, 29.8794549, 3.0629858],
+                [2.27212548, 3.0629858, 29.44012321],
+            ],
+            [
+                [29.61604704, 0.14078778, -2.51093997],
+                [0.14078778, 28.67776049, -1.82464817],
+                [-2.51093997, -1.82464817, 31.00035449],
+            ],
+            [
+                [33.76139893, -0.45714508, 1.37780669],
+                [-0.45714508, 23.57767374, -0.06915687],
+                [1.37780669, -0.06915687, 22.47718159],
+            ],
+        ]
+    ),
+}
+
+expected_outputs_molecule_cs_iso_ensemble = {
+    "ShiftML4mol": np.array(
+        [
+            [
+                -66.95821861,
+                -68.63035488,
+                -65.44035721,
+                -72.20985431,
+                -66.08332188,
+                -68.72648596,
+                -68.2840381,
+                -65.28273467,
+            ],
+            [
+                7.2983898,
+                8.1358895,
+                8.10221456,
+                6.75831323,
+                7.0445657,
+                7.23298684,
+                6.6528395,
+                8.46792141,
+            ],
+            [
+                147.44154739,
+                145.4926907,
+                148.94909267,
+                146.03611495,
+                146.75122196,
+                147.408564,
+                146.31812997,
+                146.40686974,
+            ],
+            [
+                165.79586976,
+                165.24190035,
+                166.66756859,
+                166.23094393,
+                166.37899917,
+                166.35026204,
+                166.22038995,
+                165.78728915,
+            ],
+            [
+                25.57117211,
+                26.6808068,
+                25.72166323,
+                26.38589883,
+                26.56942399,
+                26.89722065,
+                26.01991007,
+                26.26207237,
+            ],
+            [
+                30.30559893,
+                30.17653952,
+                29.31015072,
+                30.05915733,
+                29.79361418,
+                30.55416806,
+                29.83289868,
+                29.98005975,
+            ],
+            [
+                29.79829872,
+                29.83108609,
+                29.01862346,
+                29.79617559,
+                29.86510902,
+                29.93454461,
+                28.88416593,
+                29.36580358,
+            ],
+            [
+                29.76472068,
+                29.75131677,
+                29.11204776,
+                29.57475565,
+                29.57606829,
+                29.55141444,
+                28.98250603,
+                29.23379514,
+            ],
+            [
+                26.60541809,
+                26.75586956,
+                26.23472056,
+                26.5530204,
+                26.85462812,
+                27.10303207,
+                26.44323214,
+                27.06135574,
+            ],
+        ]
+    ),
+}
+
+expected_output_molecule_ll_feat = {
+    "ShiftML4mol": np.array(
+        [
+            0.40314084,
+            0.00934121,
+            1.502971,
+            0.2306018,
+            0.7147319,
+            -0.46135873,
+            -0.06526825,
+            -0.00976735,
+            1.2999933,
+            -0.32949305,
+            0.37493718,
+            -0.21078396,
+            0.13219061,
+            -0.31761438,
+            0.7908051,
+            -0.22860089,
+            0.04734862,
+            -0.12318805,
+            -0.20573248,
+            -0.2502836,
+            0.48471785,
+            0.12814239,
+            -1.058759,
+            0.05575405,
+            2.3433967,
+            -0.0057105,
+            0.20663631,
+            -0.08789997,
+            -0.43192357,
+            -0.38366184,
+            -0.36572057,
+            0.31312972,
+            0.12389362,
+            -0.25100058,
+            0.50962013,
+            0.20160097,
+            1.312711,
+            2.662938,
+            0.13940874,
+            -0.73939794,
+            1.0680573,
+            -3.651866,
+            -0.33498138,
+            0.74204737,
+            0.705384,
+            0.5336234,
+            0.10245822,
+            0.18674167,
+            -2.2528148,
+            -0.1252688,
+            0.07816873,
+            0.1631313,
+            0.51941717,
+            0.19853291,
+            0.17056985,
+            -6.4659986,
+            -3.318618,
+            0.28793788,
+            -0.02759342,
+            -0.4586576,
+            2.905009,
+            -0.04382655,
+            -0.08779775,
+            0.13617906,
+            -0.01071268,
+            -0.08907019,
+            -0.47446585,
+            -0.08002738,
+            -0.20485076,
+            -0.37605977,
+            2.7172647,
+            1.6792072,
+            -0.09288254,
+            -0.5509335,
+            -0.89036715,
+            0.33611026,
+            -0.07553998,
+            -0.19190693,
+            0.18414114,
+            0.00428715,
+            1.5952791,
+            -0.07806966,
+            2.8000865,
+            -0.4602002,
+            -0.0500576,
+            0.36656788,
+            0.0280757,
+            0.16002667,
+            -0.13565254,
+            -0.12348524,
+            0.61258876,
+            -2.8488052,
+            -0.21517158,
+            1.6224673,
+            0.3951561,
+            0.14511448,
+            -0.11477734,
+            3.0393848,
+            -0.24936754,
+            0.1626049,
+            -0.0521923,
+            -0.7917455,
+            -0.201203,
+            -0.30403316,
+            0.17005707,
+            -0.22229645,
+            2.2520053,
+            -0.20129833,
+            0.36325014,
+            0.7835305,
+            0.0191206,
+            0.20502242,
+            0.00025843,
+            0.5100512,
+            3.298244,
+            0.16478956,
+            0.15360922,
+            0.04242456,
+            -0.11764379,
+            -0.3921401,
+            0.05367459,
+            -0.220442,
+            -2.5630243,
+            0.12522772,
+            -1.8108952,
+            -0.5765002,
+            2.6558704,
+            -0.17992997,
+            -0.32051945,
+            -0.58935934,
+            1.2121181,
+            -0.37702602,
+            0.12154377,
+            0.68831605,
+            2.9586854,
+            0.29723898,
+            -0.44126955,
+            -0.2900899,
+            -0.52815133,
+            -0.2344621,
+            -0.22305211,
+            2.5335355,
+            -0.04040375,
+            -0.16734059,
+            -0.05218315,
+            0.23546866,
+            0.00282973,
+            0.3779138,
+            1.4106209,
+            -0.28227788,
+            0.37878054,
+            0.19449015,
+            0.28357756,
+            0.00059068,
+            -0.41660658,
+            0.01571776,
+            0.22871545,
+            0.420673,
+            -0.27628142,
+            -1.7041563,
+            0.6214978,
+            3.0023203,
+            0.06380898,
+            2.6155066,
+            -0.44759557,
+            1.5682147,
+            0.20095702,
+            -0.08091556,
+            0.04369133,
+            0.13029233,
+            -0.31060347,
+            -0.05261085,
+            -0.8597013,
+            -0.30294913,
+            -0.03222945,
+            -0.04100758,
+            0.53153807,
+            -0.5358017,
+            -0.10234406,
+            0.6297236,
+            -0.23234692,
+            -0.21628281,
+            -0.20004465,
+            0.26393688,
+            0.05026942,
+            -0.16161832,
+            0.9608623,
+            0.09792875,
+            0.5489709,
+            -0.19419512,
+            0.8303317,
+            -0.02440679,
+        ],
+        dtype=np.float32,
+    ),
+}
+
+
+def acetamide():
+    return molecule("CH3CONH2")
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_regression(model_version):
+    """Regression test for the isotropic shieldings of a molecule."""
+    frame = acetamide()
+    model = ShiftML(model_version, device="cpu")
+    out = model.get_cs_iso(frame)
+
+    assert out.shape == (len(frame),), "CS iso shape mismatch"
+    assert np.allclose(
+        out, expected_outputs_molecule[model_version], atol=MOLECULE_ATOL
+    ), f"{model_version} failed regression test"
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_size_extensivity(model_version):
+    """Two copies of a molecule far apart must each give the isolated result."""
+    frame = acetamide()
+    other = frame.copy()
+    # well beyond the 10 A interaction range of the models
+    other.translate([30.0, 0.0, 0.0])
+    frame += other
+
+    model = ShiftML(model_version, device="cpu")
+    out = model.get_cs_iso(frame)
+
+    expected = expected_outputs_molecule[model_version]
+    assert np.allclose(
+        out, np.concatenate([expected, expected]), atol=MOLECULE_ATOL
+    ), f"{model_version} failed size extensivity test"
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_tensors(model_version):
+    frame = acetamide()
+    model = ShiftML(model_version, device="cpu")
+    cs_tensor = model.get_cs_tensor(frame, return_symmetric=True)
+    assert cs_tensor.shape == (len(frame), 3, 3), "CS tensor shape mismatch"
+
+    assert np.allclose(
+        cs_tensor, cs_tensor.transpose(0, 2, 1)
+    ), "CS tensor is not symmetric"
+
+    assert np.allclose(
+        cs_tensor,
+        expected_outputs_molecule_tensors[model_version],
+        rtol=1e-4,
+        atol=MOLECULE_ATOL,
+    ), "CS tensor values do not match expected output"
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_cs_iso_ensemble(model_version):
+    """Regression test for the per-member isotropic shieldings of a molecule."""
+    frame = acetamide()
+    model = ShiftML(model_version, device="cpu")
+    cs_iso_ensemble = model.get_cs_iso_ensemble(frame)
+
+    n_members = len(resolve_ensemble_members[model_version])
+    assert cs_iso_ensemble.shape == (
+        len(frame),
+        n_members,
+    ), "CS iso ensemble shape mismatch"
+
+    assert np.allclose(
+        cs_iso_ensemble,
+        expected_outputs_molecule_cs_iso_ensemble[model_version],
+        rtol=1e-4,
+        atol=MOLECULE_ATOL,
+    ), "CS iso ensemble values do not match expected output"
+
+    # the ensemble mean is what get_cs_iso returns
+    assert np.allclose(
+        cs_iso_ensemble.mean(axis=-1), model.get_cs_iso(frame), rtol=1e-4
+    ), "CS iso is not the mean over the ensemble members"
+
+    # guard against a model being uploaded twice to zenodo
+    for i in range(n_members):
+        for j in range(i + 1, n_members):
+            assert not np.array_equal(
+                cs_iso_ensemble[:, i], cs_iso_ensemble[:, j]
+            ), f"{model_version} members {i} and {j} predict identical values"
+
+
+@pytest.mark.parametrize("model_version", ["ShiftML4mol0"])
+def test_molecule_single_model_tensors(model_version):
+    """Regression test of one of the ensemble members (model 0)"""
+    frame = acetamide()
+    model = ShiftML(model_version, device="cpu")
+    cs_tensor = model.get_cs_tensor(frame, return_symmetric=True).reshape((-1, 3, 3))
+    assert cs_tensor.shape == (len(frame), 3, 3), "CS tensor shape mismatch"
+
+    assert np.allclose(
+        cs_tensor, cs_tensor.transpose(0, 2, 1)
+    ), "CS tensor is not symmetric"
+
+    assert np.allclose(
+        cs_tensor,
+        expected_outputs_molecule_tensors[model_version],
+        rtol=1e-3,
+        atol=MOLECULE_ATOL,
+    ), "CS tensor values do not match expected output"
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_fail_potassium(model_version):
+    """Unlike ShiftML3 and ShiftML4, the molecular models are not fitted on K"""
+    frame = Atoms("KCl", positions=[[0, 0, 0], [0, 0, 2.7]])
+    model = ShiftML(model_version, device="cpu")
+    with pytest.raises(
+        ValueError, match="Model is fitted only for the following atomic numbers:"
+    ):
+        model.get_cs_iso(frame)
+
+
+@pytest.mark.parametrize("model_version", MOLECULAR_MODELS)
+def test_molecule_last_layer_features(model_version):
+    """Test last layer features extraction on a molecule"""
+    frame = acetamide()
+    model = ShiftML(model_version, device="cpu")
+    ll_feat = model.get_last_layer_features(frame)
+
+    assert ll_feat.shape == (len(frame), 192), "Last layer features shape mismatch"
+
+    assert np.allclose(
+        ll_feat[0],
+        expected_output_molecule_ll_feat[model_version],
+        rtol=1e-3,
+        atol=1e-4,
+    ), "Last layer features values do not match expected output"

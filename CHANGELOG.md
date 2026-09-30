@@ -2,6 +2,20 @@
 
 All notable changes to ShiftML are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **New model `ShiftML4mol`** for chemical shieldings of isolated molecules.
+  An ensemble of 8 nanoPET models trained on the molecules cut from the crystal
+  structures of the `ShiftML4` training set, directly on chemical shielding
+  tensors computed at the PBE0/cc-pVTZ level of theory in implicit solvation
+  (CPCM, dichloromethane). It covers 11 elements: H, C, N, O, S, F, P, Cl, Na,
+  Ca and Mg (unlike `ShiftML3` and `ShiftML4`, K is not supported). It can be
+  used as a fast substitute for PBE0/cc-pVTZ CPCM(dichloromethane) shielding
+  calculations of molecules, within the limitations of that reference level of
+  theory. Select it with `ShiftML("ShiftML4mol")`.
+
 ## [0.2.0] - 2026-08-24
 
 ### Added
@@ -54,6 +68,7 @@ All notable changes to ShiftML are documented in this file.
 
 - First public release.
 
+[Unreleased]: https://github.com/lab-cosmo/ShiftML/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/lab-cosmo/ShiftML/releases/tag/v0.2.0
 [0.1.1]: https://github.com/lab-cosmo/ShiftML/releases/tag/v0.1.1
 [0.1.0]: https://github.com/lab-cosmo/ShiftML/releases/tag/v0.1.0
